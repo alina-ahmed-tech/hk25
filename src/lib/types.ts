@@ -69,7 +69,7 @@ export const PredictiveAnalysisSchema = z.object({
 export const ArbiterSynthesisSchema = z.object({
     keyVulnerabilities: z.array(KeyVulnerabilitySchema).optional().describe('Key vulnerabilities identified in the legal strategy.'),
     refinedStrategy: z.array(RefinedStrategySchema).optional().describe('Recommendations for refining the legal strategy.'),
-    predictiveAnalysis: PredictiveAnalysisSchema.describe('Predictive analysis of the case outcome.'),
+    predictiveAnalysis: PredictiveAnalysisSchema.optional().describe('Predictive analysis of the case outcome.'),
 });
 
 export const ThreePartAnalysisSchema = z.object({

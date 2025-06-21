@@ -34,8 +34,6 @@ export function AnalysisDashboard({ analysis, strategy }: AnalysisDashboardProps
     }
   }
 
-  const predictiveAnalysis = analysis.arbiterSynthesis.predictiveAnalysis;
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 animate-fade-in">
       {/* Advocate's Brief */}
@@ -154,30 +152,32 @@ export function AnalysisDashboard({ analysis, strategy }: AnalysisDashboardProps
               ))}
             </ul>
           </div>
-          <div>
-            <h4 className="font-semibold mb-2 flex items-center gap-2 text-amber-400"><TrendingUp className="h-5 w-5"/>Predictive Analysis</h4>
-            <div className="flex items-center justify-between p-3 bg-background/50 rounded-lg border border-amber-500/20">
-                <span className="text-foreground">Case Outcome Prediction</span>
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Button variant="outline" className="text-foreground">
-                            Confidence: {Math.round(predictiveAnalysis.confidenceLevel * 100)}%
-                            <HelpCircle className="ml-2 h-4 w-4 text-muted-foreground" />
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-80">
-                        <div className="grid gap-4">
-                            <div className="space-y-2">
-                                <h4 className="font-medium leading-none">Analysis Rationale</h4>
-                                <p className="text-sm text-muted-foreground">
-                                    {predictiveAnalysis.outcomePrediction}
-                                </p>
-                            </div>
-                        </div>
-                    </PopoverContent>
-                </Popover>
+          {analysis.arbiterSynthesis.predictiveAnalysis && (
+            <div>
+              <h4 className="font-semibold mb-2 flex items-center gap-2 text-amber-400"><TrendingUp className="h-5 w-5"/>Predictive Analysis</h4>
+              <div className="flex items-center justify-between p-3 bg-background/50 rounded-lg border border-amber-500/20">
+                  <span className="text-foreground">Case Outcome Prediction</span>
+                  <Popover>
+                      <PopoverTrigger asChild>
+                          <Button variant="outline" className="text-foreground">
+                              Confidence: {Math.round(analysis.arbiterSynthesis.predictiveAnalysis.confidenceLevel * 100)}%
+                              <HelpCircle className="ml-2 h-4 w-4 text-muted-foreground" />
+                          </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80">
+                          <div className="grid gap-4">
+                              <div className="space-y-2">
+                                  <h4 className="font-medium leading-none">Analysis Rationale</h4>
+                                  <p className="text-sm text-muted-foreground">
+                                      {analysis.arbiterSynthesis.predictiveAnalysis.outcomePrediction}
+                                  </p>
+                              </div>
+                          </div>
+                      </PopoverContent>
+                  </Popover>
+              </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
