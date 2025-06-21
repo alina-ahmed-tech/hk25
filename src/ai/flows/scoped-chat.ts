@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -70,6 +71,9 @@ const scopedChatFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return {response: output!};
+    if (!output) {
+      throw new Error('The AI failed to generate a valid scoped chat response.');
+    }
+    return output;
   }
 );

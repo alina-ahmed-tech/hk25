@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI agent that allows lawyers to chat with an AI arbiter.
@@ -60,8 +61,9 @@ const chatWithArbiterFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return {
-      response: output!.response,
-    };
+    if (!output) {
+        throw new Error('The AI failed to generate a valid chat response.');
+    }
+    return output;
   }
 );

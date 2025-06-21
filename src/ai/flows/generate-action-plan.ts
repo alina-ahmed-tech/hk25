@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -68,6 +69,9 @@ const generateActionPlanFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    if (!output) {
+      throw new Error('The AI failed to generate a valid action plan.');
+    }
+    return output;
   }
 );

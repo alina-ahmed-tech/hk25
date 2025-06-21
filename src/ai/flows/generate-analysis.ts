@@ -74,7 +74,7 @@ const generateAnalysisFlow = ai.defineFlow(
             originalStrategy: input.legalStrategy,
             priorAnalysisSection: JSON.stringify(item),
             itemToExpand: item.argument
-        }).then(result => ({ ...item, detailedAnalysis: result.detailedAnalysis }))
+        }).then(result => ({ ...item, detailedAnalysis: result?.detailedAnalysis || "Error generating detailed analysis for this item." }))
         .catch(e => {
             console.error(`Deep dive failed for argument: ${item.argument}`, e);
             return {...item, detailedAnalysis: "Error generating detailed analysis for this item."};
@@ -86,7 +86,7 @@ const generateAnalysisFlow = ai.defineFlow(
             originalStrategy: input.legalStrategy,
             priorAnalysisSection: JSON.stringify(item),
             itemToExpand: item.weakness
-        }).then(result => ({ ...item, detailedAnalysis: result.detailedAnalysis }))
+        }).then(result => ({ ...item, detailedAnalysis: result?.detailedAnalysis || "Error generating detailed analysis for this item." }))
         .catch(e => {
             console.error(`Deep dive failed for weakness: ${item.weakness}`, e);
             return {...item, detailedAnalysis: "Error generating detailed analysis for this item."};

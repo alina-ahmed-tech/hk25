@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Defines the Genkit flow for generating an "Adversarial Playbook".
@@ -53,6 +54,9 @@ const generateAdversarialPlaybookFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input, { model: 'googleai/gemini-2.5-pro' });
-    return output!;
+    if (!output) {
+      throw new Error('The AI failed to generate a valid adversarial playbook.');
+    }
+    return output;
   }
 );
