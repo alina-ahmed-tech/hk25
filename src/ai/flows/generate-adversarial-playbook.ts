@@ -31,16 +31,16 @@ const prompt = ai.definePrompt({
   name: 'generateAdversarialPlaybookPrompt',
   input: {schema: GenerateAdversarialPlaybookInputSchema},
   output: {schema: GenerateAdversarialPlaybookOutputSchema},
-  prompt: `You are a master legal strategist with expertise in international arbitration, thinking multiple moves ahead. Your task is to create an exceptionally deep "Adversarial Playbook" based on the provided legal strategy.
+  prompt: `You are a master legal strategist with expertise in international arbitration, thinking multiple moves ahead. Your task is to create an exceptionally deep "Adversarial Playbook" based on the provided legal strategy. Adhere strictly to the provided JSON schema. Fields marked as optional in the schema can be omitted if there is no relevant information to include.
 
 Legal Strategy Document:
 {{{legalStrategy}}}
 
 Based on the document, generate the following:
-1.  **Potential Counter-Arguments:** Create an exhaustive list of every potential argument the opposing side could realistically make. Be creative and thorough.
+1.  **Potential Counter-Arguments:** Create an exhaustive list of every potential argument the opposing side could realistically make. Be creative and thorough. If no counter-arguments are found, you may omit the 'potentialCounterArguments' array.
 2.  **Rebuttals & Counter-Rebuttals:** For each counter-argument:
-    a.  Provide a set of strong, well-supported **rebuttals** our team can use, including supporting **citations**.
-    b.  **Crucially, for each rebuttal, anticipate the next move.** Generate a list of likely **potentialCounterRebuttals** the opposing counsel might use in response to our rebuttal. For each, assess its strength as "High", "Medium", or "Low".
+    a.  Provide a set of strong, well-supported **rebuttals** our team can use. If applicable, include supporting **citations**. You may omit the 'citations' array.
+    b.  **Crucially, for each rebuttal, anticipate the next move.** Generate a list of likely **potentialCounterRebuttals** the opposing counsel might use in response to our rebuttal. For each, assess its strength as "High", "Medium", or "Low". You may omit the 'potentialCounterRebuttals' array if there are none.
 3.  **Opponent Counsel Analysis:** Provide a brief analysis of what the opposing counsel's strategic patterns might be, based on the nature of the case. Frame this as a general strategic forecast.
 `,
 });
