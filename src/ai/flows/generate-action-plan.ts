@@ -9,7 +9,6 @@
  * - GenerateActionPlanOutput - The return type for the generateActionPlan function.
  */
 
-import type {ChatMessage} from '@/lib/types';
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
@@ -22,7 +21,7 @@ const GenerateActionPlanInputSchema = z.object({
       z.object({
         role: z.enum(['user', 'arbiter']),
         content: z.string(),
-      })
+      }).passthrough()
     )
     .optional()
     .describe('The subsequent chat history between the user and the AI arbiter.'),
@@ -53,7 +52,11 @@ Next, consider the follow-up conversation, which provides crucial context on wha
 {{#if chatHistory}}
 Follow-up Conversation:
 {{#each chatHistory}}
-{{role}}: {{{content}}}
+{{#if isUser}}
+Lawyer: {{{content}}}
+{{else}}
+Arbiter: {{{content}}}
+{{/if}}
 {{/each}}
 {{/if}}
 
@@ -68,7 +71,26 @@ const generateActionPlanFlow = ai.defineFlow(
     outputSchema: GenerateActionPlanOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const augmentedInput = {
+      ...input,
+      chatHistory: input.chatHistory?.map(message => ({
+        ...message,
+        isUser: message.role === 'user',
+      })),
+    };
+
+    const {output} = await prompt(augmentedInput, {
+      model: 'googleai/gemini-2.5-pro',
+      config: {
+        safetySettings: [
+          { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
+          { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+        ],
+      },
+    });
+    
     if (!output) {
       throw new Error('The AI failed to generate a valid action plan.');
     }
