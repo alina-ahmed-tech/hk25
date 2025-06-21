@@ -269,6 +269,7 @@ export default function ProjectPage() {
       item.id === updatedItem.id ? updatedItem : item
     );
     handleActionItemUpdate(newActionPlan);
+    setScopedChatItem(updatedItem);
   };
   
   const renderContent = () => {
