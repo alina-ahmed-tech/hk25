@@ -35,7 +35,7 @@ export const GenerateAnalysisInputSchema = z.object({
 
 export const CaseCitationSchema = z.object({
     citation: z.string().describe("The name of the cited case."),
-    relevance: z.string().describe("A brief explanation of how this case supports the argument.")
+    relevance: z.string().optional().describe("A brief explanation of how this case supports the argument.")
 });
 
 export const LegalArgumentSchema = z.object({
@@ -47,7 +47,7 @@ export const LegalArgumentSchema = z.object({
 export const WeaknessSchema = z.object({
   weakness: z.string().describe('A specific weakness identified in the overall strategy.'),
   vulnerabilityScore: z.number().min(1).max(10).describe('A numerical score from 1-10 indicating the severity of the vulnerability (1=low, 10=high).'),
-  rationale: z.string().describe("A brief rationale explaining why this vulnerability score was given."),
+  rationale: z.string().optional().describe("A brief rationale explaining why this vulnerability score was given."),
   detailedAnalysis: z.string().optional().describe("An extremely detailed, exhaustive analysis of the weakness, generated in the background."),
 });
 
@@ -58,7 +58,7 @@ export const KeyVulnerabilitySchema = z.object({
 
 export const RefinedStrategySchema = z.object({
   recommendation: z.string().describe('A recommendation to refine the legal strategy.'),
-  rationale: z.string().describe('The rationale behind the refined strategy recommendation.'),
+  rationale: z.string().optional().describe('The rationale behind the refined strategy recommendation.'),
 });
 
 export const PredictiveAnalysisSchema = z.object({
