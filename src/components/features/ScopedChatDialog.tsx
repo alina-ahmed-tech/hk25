@@ -73,6 +73,7 @@ export function ScopedChatDialog({ item, onClose, onUpdate }: ScopedChatDialogPr
     try {
       const result = await scopedChat({
         actionItemId: item.id,
+        actionItemText: item.text,
         message: input,
         chatHistory: chatHistory,
       });
