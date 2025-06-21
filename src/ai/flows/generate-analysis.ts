@@ -3,7 +3,7 @@
 
 /**
  * @fileOverview This file defines the generateAnalysis flow. It performs a two-phase analysis:
- * 1. Generates a high-level analysis and adversarial playbook.
+ * 1. Generates a high-level analysis and adversarial playbook using Gemini 2.5 Pro.
  * 2. Generates a detailed "deep dive" for each argument and weakness from the high-level analysis.
  * It then combines everything into a single, comprehensive analysis object.
  */
@@ -69,7 +69,7 @@ const generateAnalysisFlow = ai.defineFlow(
     }
 
     // Step 2: Generate deep dives for all arguments and weaknesses in parallel
-    const argumentDeepDivePromises = highLevelAnalysis.advocateBrief.map(item => 
+    const argumentDeepDivePromises = (highLevelAnalysis.advocateBrief || []).map(item => 
         generateDeepDive({
             originalStrategy: input.legalStrategy,
             priorAnalysisSection: JSON.stringify(item),
@@ -81,7 +81,7 @@ const generateAnalysisFlow = ai.defineFlow(
         })
     );
 
-    const weaknessDeepDivePromises = highLevelAnalysis.identifiedWeaknesses.map(item => 
+    const weaknessDeepDivePromises = (highLevelAnalysis.identifiedWeaknesses || []).map(item => 
         generateDeepDive({
             originalStrategy: input.legalStrategy,
             priorAnalysisSection: JSON.stringify(item),
