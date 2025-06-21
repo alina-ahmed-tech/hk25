@@ -73,8 +73,8 @@ export const ArbiterSynthesisSchema = z.object({
 });
 
 export const ThreePartAnalysisSchema = z.object({
-  advocateBrief: z.array(LegalArgumentSchema).describe("The advocate's brief with key arguments and citations."),
-  identifiedWeaknesses: z.array(WeaknessSchema).describe("A list of identified weaknesses in the overall strategy."),
+  advocateBrief: z.array(LegalArgumentSchema).optional().describe("The advocate's brief with key arguments and citations."),
+  identifiedWeaknesses: z.array(WeaknessSchema).optional().describe("A list of identified weaknesses in the overall strategy."),
   arbiterSynthesis: ArbiterSynthesisSchema.describe('The arbiter’s synthesis of the arguments and rebuttals.'),
 });
 

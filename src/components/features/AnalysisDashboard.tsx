@@ -46,41 +46,45 @@ export function AnalysisDashboard({ analysis, strategy }: AnalysisDashboardProps
         </CardHeader>
         <CardContent>
           <Accordion type="single" collapsible className="w-full">
-            {analysis.advocateBrief.map((item, index) => (
-              <AccordionItem value={`item-${index}`} key={index} className="border-border/50">
-                <AccordionTrigger className="hover:no-underline text-left text-foreground">{item.argument}</AccordionTrigger>
-                <AccordionContent>
-                  <p className="font-semibold text-sm mb-2 text-muted-foreground">Case Citations & Relevance:</p>
-                  <div className="space-y-4 mb-4">
-                    {item.caseCitations && item.caseCitations.length > 0 ? (
-                       item.caseCitations.map((citation, i) => (
-                          <div key={i} className="pl-4 border-l-2 border-primary/30">
-                            <Button
-                              variant="link"
-                              className="p-0 h-auto font-normal text-base text-blue-400 hover:text-blue-300 text-left mb-1"
-                              onClick={() => setModalCase(citation.citation)}
-                            >
-                              {citation.citation}
-                            </Button>
-                            <p className="text-sm text-muted-foreground">{citation.relevance}</p>
-                          </div>
-                        ))
-                    ) : (
-                      <p className="text-sm text-muted-foreground pl-4 border-l-2 border-border/50">No cases cited.</p>
-                    )}
-                  </div>
-                   
-                  <div className="mt-4 prose prose-invert prose-sm max-w-none prose-p:text-foreground prose-ul:text-foreground prose-li:text-foreground">
-                    {item.detailedAnalysis ? (
-                        <ReactMarkdown>{item.detailedAnalysis}</ReactMarkdown>
-                    ) : (
-                        <p className="text-sm text-muted-foreground">Detailed analysis was not generated for this item.</p>
-                    )}
-                  </div>
+            {analysis.advocateBrief && analysis.advocateBrief.length > 0 ? (
+              analysis.advocateBrief.map((item, index) => (
+                <AccordionItem value={`item-${index}`} key={index} className="border-border/50">
+                  <AccordionTrigger className="hover:no-underline text-left text-foreground">{item.argument}</AccordionTrigger>
+                  <AccordionContent>
+                    <p className="font-semibold text-sm mb-2 text-muted-foreground">Case Citations & Relevance:</p>
+                    <div className="space-y-4 mb-4">
+                      {item.caseCitations && item.caseCitations.length > 0 ? (
+                         item.caseCitations.map((citation, i) => (
+                            <div key={i} className="pl-4 border-l-2 border-primary/30">
+                              <Button
+                                variant="link"
+                                className="p-0 h-auto font-normal text-base text-blue-400 hover:text-blue-300 text-left mb-1"
+                                onClick={() => setModalCase(citation.citation)}
+                              >
+                                {citation.citation}
+                              </Button>
+                              <p className="text-sm text-muted-foreground">{citation.relevance}</p>
+                            </div>
+                          ))
+                      ) : (
+                        <p className="text-sm text-muted-foreground pl-4 border-l-2 border-border/50">No cases cited.</p>
+                      )}
+                    </div>
+                     
+                    <div className="mt-4 prose prose-invert prose-sm max-w-none prose-p:text-foreground prose-ul:text-foreground prose-li:text-foreground">
+                      {item.detailedAnalysis ? (
+                          <ReactMarkdown>{item.detailedAnalysis}</ReactMarkdown>
+                      ) : (
+                          <p className="text-sm text-muted-foreground">Detailed analysis was not generated for this item.</p>
+                      )}
+                    </div>
 
-                </AccordionContent>
-              </AccordionItem>
-            ))}
+                  </AccordionContent>
+                </AccordionItem>
+              ))
+            ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">No key arguments were identified for the brief.</p>
+            )}
           </Accordion>
         </CardContent>
       </Card>
@@ -95,29 +99,33 @@ export function AnalysisDashboard({ analysis, strategy }: AnalysisDashboardProps
         </CardHeader>
         <CardContent>
           <Accordion type="single" collapsible className="w-full">
-            {analysis.identifiedWeaknesses.map((weakness, index) => (
-              <AccordionItem value={`weakness-${index}`} key={index} className="border-border/50">
-                <AccordionTrigger className="hover:no-underline text-left">
-                  <div className="flex flex-col items-start text-left w-full">
-                      <p className="font-semibold text-foreground text-left">{weakness.weakness}</p>
-                      <Badge variant="outline" className={`mt-2 ${getVulnerabilityColor(weakness.vulnerabilityScore)}`}>
-                        Vulnerability Score: {weakness.vulnerabilityScore}/10
-                      </Badge>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                    <p className="text-xs text-muted-foreground mb-4">{weakness.rationale}</p>
-                    
-                    <div className="prose prose-invert prose-sm max-w-none prose-p:text-foreground prose-ul:text-foreground prose-li:text-foreground">
-                        {weakness.detailedAnalysis ? (
-                            <ReactMarkdown>{weakness.detailedAnalysis}</ReactMarkdown>
-                        ) : (
-                            <p className="text-sm text-muted-foreground">Detailed analysis was not generated for this item.</p>
-                        )}
+            {analysis.identifiedWeaknesses && analysis.identifiedWeaknesses.length > 0 ? (
+              analysis.identifiedWeaknesses.map((weakness, index) => (
+                <AccordionItem value={`weakness-${index}`} key={index} className="border-border/50">
+                  <AccordionTrigger className="hover:no-underline text-left">
+                    <div className="flex flex-col items-start text-left w-full">
+                        <p className="font-semibold text-foreground text-left">{weakness.weakness}</p>
+                        <Badge variant="outline" className={`mt-2 ${getVulnerabilityColor(weakness.vulnerabilityScore)}`}>
+                          Vulnerability Score: {weakness.vulnerabilityScore}/10
+                        </Badge>
                     </div>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
+                  </AccordionTrigger>
+                  <AccordionContent>
+                      <p className="text-xs text-muted-foreground mb-4">{weakness.rationale}</p>
+                      
+                      <div className="prose prose-invert prose-sm max-w-none prose-p:text-foreground prose-ul:text-foreground prose-li:text-foreground">
+                          {weakness.detailedAnalysis ? (
+                              <ReactMarkdown>{weakness.detailedAnalysis}</ReactMarkdown>
+                          ) : (
+                              <p className="text-sm text-muted-foreground">Detailed analysis was not generated for this item.</p>
+                          )}
+                      </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))
+            ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">No significant weaknesses were identified.</p>
+            )}
           </Accordion>
         </CardContent>
       </Card>
