@@ -31,7 +31,7 @@ export async function generateAdversarialPlaybook(input: GenerateAdversarialPlay
 const prompt = ai.definePrompt({
   name: 'generateAdversarialPlaybookPrompt',
   input: {schema: GenerateAdversarialPlaybookInputSchema},
-  output: {schema: GenerateAdversarialPlaybookOutputSchema},
+  output: {schema: AdversarialPlaybookSchema},
   prompt: `You are a master legal strategist with expertise in international arbitration, thinking multiple moves ahead. Your task is to create an exceptionally deep "Adversarial Playbook" based on the provided legal strategy. Adhere strictly to the provided JSON schema. Fields marked as optional in the schema can be omitted if there is no relevant information to include.
 
 Legal Strategy Document:
@@ -53,7 +53,7 @@ const generateAdversarialPlaybookFlow = ai.defineFlow(
     outputSchema: GenerateAdversarialPlaybookOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input, { 
+    const {output: playbook} = await prompt(input, { 
       model: 'googleai/gemini-2.5-pro',
       config: {
         safetySettings: [
@@ -64,9 +64,11 @@ const generateAdversarialPlaybookFlow = ai.defineFlow(
         ],
       },
     });
-    if (!output) {
+    
+    if (!playbook) {
       throw new Error('The AI failed to generate a valid adversarial playbook.');
     }
-    return output;
+    
+    return { adversarialPlaybook: playbook };
   }
 );
