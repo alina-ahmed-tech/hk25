@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { User } from 'firebase/auth';
 
 // A mock user object for demonstration purposes.
@@ -33,15 +33,26 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  loading: false,
+  loading: true, // Start in a loading state to prevent race conditions
   login: () => {},
   logout: () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  // loading is false because we don't have an async check on startup.
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(true); // Start in a loading state
+
+  // This effect simulates checking for an existing session on app load.
+  // In a real app, this would be an async call to your auth backend.
+  useEffect(() => {
+    // For this mock provider, we'll just finish "loading" after a moment.
+    // This gives the rest of the app time to mount before routing logic runs.
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 200); // A short delay is enough to prevent race conditions
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const login = useCallback(() => {
     setUser(mockUser);
