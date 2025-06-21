@@ -14,16 +14,23 @@ import {
   GeneratePresentationInputSchema,
   GeneratePresentationOutputSchema,
   PresentationContentSchema,
+  AnalysisDashboardSchema,
 } from '@/lib/types';
-import type { GeneratePresentationInput, GeneratePresentationOutput, PresentationContent, Slide } from '@/lib/types';
+import type { GeneratePresentationInput, GeneratePresentationOutput, PresentationContent, Slide, Analysis } from '@/lib/types';
 
 export async function generatePresentation(input: GeneratePresentationInput): Promise<GeneratePresentationOutput> {
   return generatePresentationFlow(input);
 }
 
+// Define a schema for the prompt's input, which expects the parsed analysis object
+const PresentationContentPromptInputSchema = z.object({
+  analysis: AnalysisDashboardSchema,
+  projectName: z.string(),
+});
+
 const presentationContentPrompt = ai.definePrompt({
   name: 'generatePresentationContentPrompt',
-  input: { schema: GeneratePresentationInputSchema.pick({ analysis: true, projectName: true }) },
+  input: { schema: PresentationContentPromptInputSchema },
   output: { schema: PresentationContentSchema },
   prompt: `You are an expert legal assistant tasked with creating a professional slide deck from a detailed case analysis.
   
@@ -98,8 +105,12 @@ const generatePresentationFlow = ai.defineFlow(
     outputSchema: GeneratePresentationOutputSchema,
   },
   async ({ analysis, projectName }) => {
-    // Step 1: Generate the structured content for the presentation.
-    const { output: presentationContent } = await presentationContentPrompt({ analysis, projectName });
+    // Step 1: Parse the analysis string and generate the structured content.
+    const analysisObject = JSON.parse(analysis) as Analysis;
+    const { output: presentationContent } = await presentationContentPrompt({
+      analysis: analysisObject,
+      projectName,
+    });
 
     if (!presentationContent) {
       throw new Error('AI failed to generate presentation content.');

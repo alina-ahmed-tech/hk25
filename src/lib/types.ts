@@ -101,6 +101,7 @@ export const SlideSchema = z.object({
   bullets: z.array(z.string()).optional(),
   speakerNotes: z.string().optional(),
 });
+export type Slide = z.infer<typeof SlideSchema>;
 
 export const PresentationContentSchema = z.object({
   title: z.string().describe('The main title for the entire presentation.'),
@@ -109,7 +110,7 @@ export const PresentationContentSchema = z.object({
 export type PresentationContent = z.infer<typeof PresentationContentSchema>;
 
 export const GeneratePresentationInputSchema = z.object({
-  analysis: AnalysisDashboardSchema,
+  analysis: z.string().describe('A JSON string representation of the complete analysis object.'),
   projectName: z.string(),
 });
 export type GeneratePresentationInput = z.infer<typeof GeneratePresentationInputSchema>;

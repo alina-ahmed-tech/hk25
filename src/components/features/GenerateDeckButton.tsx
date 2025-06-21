@@ -48,7 +48,7 @@ export function GenerateDeckButton({ projectName, analysis }: GenerateDeckButton
     try {
       const result = await generatePresentation({
         projectName,
-        analysis,
+        analysis: JSON.stringify(analysis),
       });
 
       if (result.fileContent) {
