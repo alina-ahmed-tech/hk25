@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -5,22 +6,14 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'zod';
-import { AnalysisDashboardSchema, GenerateAnalysisInputSchema } from '@/lib/types';
-import type { Analysis } from '@/lib/types';
+import {
+  GenerateAllDeepDivesInputSchema,
+  GenerateAllDeepDivesOutputSchema,
+  type Analysis,
+  type GenerateAllDeepDivesInput,
+  type GenerateAllDeepDivesOutput,
+} from '@/lib/types';
 import { generateDeepDive } from './generate-deep-dive';
-
-// The input will be the initial analysis and the original strategy
-export const GenerateAllDeepDivesInputSchema = z.object({
-  legalStrategy: GenerateAnalysisInputSchema.shape.legalStrategy,
-  initialAnalysis: AnalysisDashboardSchema,
-});
-export type GenerateAllDeepDivesInput = z.infer<typeof GenerateAllDeepDivesInputSchema>;
-
-export const GenerateAllDeepDivesOutputSchema = z.object({
-  updatedAnalysis: AnalysisDashboardSchema,
-});
-export type GenerateAllDeepDivesOutput = z.infer<typeof GenerateAllDeepDivesOutputSchema>;
 
 export async function generateAllDeepDives(input: GenerateAllDeepDivesInput): Promise<GenerateAllDeepDivesOutput> {
   return generateAllDeepDivesFlow(input);

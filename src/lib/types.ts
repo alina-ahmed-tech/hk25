@@ -82,6 +82,18 @@ export const AnalysisDashboardSchema = ThreePartAnalysisSchema.extend({
   adversarialPlaybook: AdversarialPlaybookSchema.describe('An adversarial playbook with counter-arguments and rebuttals.'),
 });
 
+// For GenerateAllDeepDives Flow
+export const GenerateAllDeepDivesInputSchema = z.object({
+  legalStrategy: GenerateAnalysisInputSchema.shape.legalStrategy,
+  initialAnalysis: AnalysisDashboardSchema,
+});
+export type GenerateAllDeepDivesInput = z.infer<typeof GenerateAllDeepDivesInputSchema>;
+
+export const GenerateAllDeepDivesOutputSchema = z.object({
+  updatedAnalysis: AnalysisDashboardSchema,
+});
+export type GenerateAllDeepDivesOutput = z.infer<typeof GenerateAllDeepDivesOutputSchema>;
+
 // Main Project Type
 export type Project = {
   id: string;
