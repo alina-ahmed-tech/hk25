@@ -136,7 +136,7 @@ export function AnalysisDashboard({ analysis, strategy }: AnalysisDashboardProps
           <div>
             <h4 className="font-semibold mb-2 flex items-center gap-2 text-amber-400"><Lightbulb className="h-5 w-5"/>Key Vulnerabilities</h4>
             <ul className="list-disc list-inside space-y-2 text-sm text-foreground">
-              {analysis.arbiterSynthesis.keyVulnerabilities.map((item, index) => (
+              {analysis.arbiterSynthesis.keyVulnerabilities?.map((item, index) => (
                 <li key={index}>
                   {item.vulnerability}
                    {item.affectedArguments && item.affectedArguments.length > 0 && (
@@ -149,7 +149,7 @@ export function AnalysisDashboard({ analysis, strategy }: AnalysisDashboardProps
            <div>
             <h4 className="font-semibold mb-2 flex items-center gap-2 text-amber-400"><TrendingUp className="h-5 w-5"/>Refined Strategy</h4>
             <ul className="list-disc list-inside space-y-1 text-sm text-foreground">
-              {analysis.arbiterSynthesis.refinedStrategy.map((item, index) => (
+              {analysis.arbiterSynthesis.refinedStrategy?.map((item, index) => (
                 <li key={index}>{item.recommendation} - <span className="text-muted-foreground">{item.rationale}</span></li>
               ))}
             </ul>
@@ -196,12 +196,12 @@ export function AnalysisDashboard({ analysis, strategy }: AnalysisDashboardProps
                     <p className="text-sm text-foreground">{analysis.adversarialPlaybook.opponentCounselAnalysis}</p>
                 </div>
                 <Accordion type="multiple" className="w-full">
-                    {analysis.adversarialPlaybook.potentialCounterArguments.map((item, index) => (
+                    {analysis.adversarialPlaybook.potentialCounterArguments?.map((item, index) => (
                       <AccordionItem value={`counter-${index}`} key={index} className="border-border/50">
                           <AccordionTrigger className="hover:no-underline text-left text-foreground">{item.counterArgument}</AccordionTrigger>
                           <AccordionContent>
                             <div className="pl-4 border-l-2 border-purple-400/30 space-y-4">
-                              {item.rebuttals.map((rebuttal, rIndex) => (
+                              {item.rebuttals?.map((rebuttal, rIndex) => (
                                 <div key={rIndex}>
                                   <p className="font-semibold text-sm text-muted-foreground flex items-center"><MessageCircle className="h-4 w-4 mr-2" /> Our Rebuttal</p>
                                   <p className="text-sm mt-1 text-foreground">{rebuttal.rebuttal}</p>

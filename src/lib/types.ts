@@ -15,11 +15,11 @@ const RebuttalSchema = z.object({
 
 const CounterArgumentSchema = z.object({
   counterArgument: z.string().describe('A potential counter-argument the opponent might raise.'),
-  rebuttals: z.array(RebuttalSchema).describe('Potential rebuttals to this counter-argument.'),
+  rebuttals: z.array(RebuttalSchema).optional().describe('Potential rebuttals to this counter-argument.'),
 });
 
 export const AdversarialPlaybookSchema = z.object({
-  potentialCounterArguments: z.array(CounterArgumentSchema).describe('An exhaustive list of potential counter-arguments.'),
+  potentialCounterArguments: z.array(CounterArgumentSchema).optional().describe('An exhaustive list of potential counter-arguments.'),
   opponentCounselAnalysis: z
     .string()
     .describe(
@@ -67,8 +67,8 @@ export const PredictiveAnalysisSchema = z.object({
 });
 
 export const ArbiterSynthesisSchema = z.object({
-    keyVulnerabilities: z.array(KeyVulnerabilitySchema).describe('Key vulnerabilities identified in the legal strategy.'),
-    refinedStrategy: z.array(RefinedStrategySchema).describe('Recommendations for refining the legal strategy.'),
+    keyVulnerabilities: z.array(KeyVulnerabilitySchema).optional().describe('Key vulnerabilities identified in the legal strategy.'),
+    refinedStrategy: z.array(RefinedStrategySchema).optional().describe('Recommendations for refining the legal strategy.'),
     predictiveAnalysis: PredictiveAnalysisSchema.describe('Predictive analysis of the case outcome.'),
 });
 
