@@ -94,6 +94,33 @@ export const GenerateAllDeepDivesOutputSchema = z.object({
 });
 export type GenerateAllDeepDivesOutput = z.infer<typeof GenerateAllDeepDivesOutputSchema>;
 
+// For Presentation Generation
+export const SlideSchema = z.object({
+  title: z.string(),
+  subtitle: z.string().optional(),
+  bullets: z.array(z.string()).optional(),
+  speakerNotes: z.string().optional(),
+});
+
+export const PresentationContentSchema = z.object({
+  title: z.string().describe('The main title for the entire presentation.'),
+  slides: z.array(SlideSchema).describe('An array of slide objects.'),
+});
+export type PresentationContent = z.infer<typeof PresentationContentSchema>;
+
+export const GeneratePresentationInputSchema = z.object({
+  analysis: AnalysisDashboardSchema,
+  projectName: z.string(),
+  userEmail: z.string().email(),
+});
+export type GeneratePresentationInput = z.infer<typeof GeneratePresentationInputSchema>;
+
+export const GeneratePresentationOutputSchema = z.object({
+  presentationUrl: z.string().url(),
+});
+export type GeneratePresentationOutput = z.infer<typeof GeneratePresentationOutputSchema>;
+
+
 // Main Project Type
 export type Project = {
   id: string;
@@ -106,6 +133,7 @@ export type Project = {
   actionPlan?: ActionItem[];
   mainChatHistory?: ChatMessage[];
   simulationState?: SimulationState;
+  presentationUrl?: string;
 };
 
 export type Analysis = z.infer<typeof AnalysisDashboardSchema>;

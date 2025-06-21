@@ -12,3 +12,4 @@ import '@/ai/flows/generate-project-name.ts';
 import '@/ai/flows/run-simulation.ts';
 import '@/ai/flows/generate-deep-dive.ts';
 import '@/ai/flows/generate-all-deep-dives.ts';
+import '@/ai/flows/generate-presentation.ts';

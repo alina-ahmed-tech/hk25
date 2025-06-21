@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
-import { getAuth, type Auth } from 'firebase/auth';
+import { getAuth, type Auth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -23,3 +23,8 @@ if (firebaseConfig.apiKey) {
 
 export const auth: Auth | null = app ? getAuth(app) : null;
 export const db: Firestore | null = app ? getFirestore(app) : null;
+
+// Provider for requesting Google API scopes
+export const provider = new GoogleAuthProvider();
+provider.addScope('https://www.googleapis.com/auth/presentations');
+provider.addScope('https://www.googleapis.com/auth/drive.file');

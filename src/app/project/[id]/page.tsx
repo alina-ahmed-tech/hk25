@@ -17,9 +17,10 @@ import { ActionChecklist } from '@/components/features/ActionChecklist';
 import { ChatWindow } from '@/components/features/ChatWindow';
 import { ScopedChatDialog } from '@/components/features/ScopedChatDialog';
 import { ActionPlanDraftDialog } from '@/components/features/ActionPlanDraftDialog';
+import { GenerateDeckButton } from '@/components/features/GenerateDeckButton';
 import { generateAnalysis, generateActionPlan, generateProjectName, generateAllDeepDives } from '@/lib/actions';
 import { getAIErrorMessage } from '@/lib/utils';
-import { MessageSquare, ListTodo, Pencil, Rocket, ChevronRight } from 'lucide-react';
+import { MessageSquare, ListTodo, Pencil, Rocket, ChevronRight, Presentation } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 type PageState = 'form' | 'thinking' | 'dashboard';
@@ -269,8 +270,23 @@ export default function ProjectPage() {
       item.id === updatedItem.id ? updatedItem : item
     );
     handleActionItemUpdate(newActionPlan);
-    setScopedChatItem(updatedItem);
+    // Also update the item in the dialog
+    const currentScopedItem = scopedChatItem;
+    if (currentScopedItem && currentScopedItem.id === updatedItem.id) {
+        setScopedChatItem(updatedItem);
+    }
   };
+
+  const handlePresentationSuccess = async (url: string) => {
+    if (!project || !user || !db) return;
+    const updatedProject = { ...project, presentationUrl: url };
+    setProject(updatedProject);
+
+    if (!project.id.startsWith('local-')) {
+        const projectRef = doc(db, 'users', user.uid, 'projects', project.id);
+        await updateDoc(projectRef, { presentationUrl: url });
+    }
+  }
   
   const renderContent = () => {
     switch (pageState) {
@@ -279,7 +295,7 @@ export default function ProjectPage() {
       case 'thinking':
         return <ThinkingAnimation />;
       case 'dashboard':
-        return project?.analysis ? (
+        return project?.analysis && user ? (
           <div className="space-y-8">
             <AnalysisDashboard analysis={project.analysis} isGeneratingDetails={isGeneratingDetails} />
             
@@ -287,7 +303,7 @@ export default function ProjectPage() {
                 <CardHeader>
                     <CardTitle className="font-headline text-2xl text-primary">Next Steps</CardTitle>
                 </CardHeader>
-                <CardContent className="grid md:grid-cols-2 gap-6">
+                <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div className="flex flex-col items-center text-center p-6 bg-background/50 rounded-lg border border-border hover:border-primary/50 transition-colors">
                         <ListTodo className="h-10 w-10 text-primary mb-4" />
                         <h3 className="font-semibold text-lg mb-2 text-foreground">Create Action Plan</h3>
@@ -326,6 +342,21 @@ export default function ProjectPage() {
                         }}>
                              <ChevronRight className="mr-2" /> Start Simulation
                         </Button>
+                    </div>
+
+                    <div className="flex flex-col items-center text-center p-6 bg-background/50 rounded-lg border border-border hover:border-primary/50 transition-colors">
+                        <Presentation className="h-10 w-10 text-primary mb-4" />
+                        <h3 className="font-semibold text-lg mb-2 text-foreground">Generate Strategy Deck</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                            Automatically create a Google Slides presentation from the complete case analysis.
+                        </p>
+                         <GenerateDeckButton 
+                            projectName={project.name}
+                            analysis={project.analysis}
+                            userEmail={user.email!}
+                            initialUrl={project.presentationUrl}
+                            onSuccess={handlePresentationSuccess}
+                         />
                     </div>
                 </CardContent>
             </Card>

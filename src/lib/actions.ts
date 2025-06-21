@@ -22,6 +22,8 @@ import { generateDeepDive as generateDeepDiveFlow } from '@/ai/flows/generate-de
 import type { GenerateDeepDiveInput, GenerateDeepDiveOutput } from '@/ai/flows/generate-deep-dive';
 import { generateAllDeepDives as generateAllDeepDivesFlow } from '@/ai/flows/generate-all-deep-dives';
 import type { GenerateAllDeepDivesInput, GenerateAllDeepDivesOutput } from '@/ai/flows/generate-all-deep-dives';
+import { generatePresentation as generatePresentationFlow } from '@/ai/flows/generate-presentation';
+import type { GeneratePresentationInput, GeneratePresentationOutput } from '@/lib/types';
 
 
 export async function generateAnalysis(
@@ -88,4 +90,10 @@ export async function generateDeepDive(
   input: GenerateDeepDiveInput
 ): Promise<GenerateDeepDiveOutput> {
   return await generateDeepDiveFlow(input);
+}
+
+export async function generatePresentation(
+    input: GeneratePresentationInput
+): Promise<GeneratePresentationOutput> {
+    return await generatePresentationFlow(input);
 }
