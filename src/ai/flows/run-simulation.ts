@@ -1,4 +1,4 @@
-// This file will be created.
+
 'use server';
 /**
  * @fileOverview The state machine for the Virtual Hearing Room simulation.
@@ -30,6 +30,15 @@ const addTranscript = (state: SimulationState, speaker: Speaker, text: string): 
     timestamp: new Date().toISOString(),
   };
   return { ...state, transcript: [...state.transcript, newEntry] };
+};
+
+const safetyConfig = {
+    safetySettings: [
+      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
+      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+    ],
 };
 
 const runSimulationFlow = ai.defineFlow(
@@ -65,10 +74,12 @@ const runSimulationFlow = ai.defineFlow(
           """
           
           Your Opening Statement:`,
-          output: { format: 'text' }
+          output: { format: 'text' },
+          config: safetyConfig,
       });
       
-      state = addTranscript(state, 'OPPOSING_COUNSEL', opponentOpening!);
+      if (!opponentOpening) throw new Error("AI failed to generate opponent's opening statement.");
+      state = addTranscript(state, 'OPPOSING_COUNSEL', opponentOpening);
 
       const userPrompt = "The Tribunal thanks counsel for the Respondent. Counsel for the Claimant, Fenoscadia Limited, you may now present your opening statement.";
       state = addTranscript(state, 'TRIBUNAL', userPrompt);
@@ -94,10 +105,12 @@ const runSimulationFlow = ai.defineFlow(
               Opponent's Statement: """${newState.transcript.find(t=>t.speaker==='OPPOSING_COUNSEL')?.text}"""
               User's Statement: """${input.userAction.payload}"""
               `,
-              output: { schema: z.object({ newStrength: z.number().min(0).max(100) }) }
+              output: { schema: z.object({ newStrength: z.number().min(0).max(100) }) },
+              config: safetyConfig,
           });
           
-          newState.caseStrength = assessment!.newStrength;
+          if (!assessment) throw new Error("AI failed to assess opening statements.");
+          newState.caseStrength = assessment.newStrength;
 
           const witnessName = "Dr. Aris Thorne";
           const witnessBackground = "The lead author of the Rhea River Contamination Study, a university study funded by a grant from the Republic of Kronos.";
@@ -113,9 +126,11 @@ const runSimulationFlow = ai.defineFlow(
                 'Kronos Counsel: [Question]'
                 'Dr. Thorne (Simulated): [Answer]'
               `,
-              output: { format: 'text' }
+              output: { format: 'text' },
+              config: safetyConfig,
           });
           
+          if (!directExam) throw new Error("AI failed to simulate direct examination.");
           newState = addTranscript(newState, 'SYSTEM', `--- Start of Direct Examination ---\n${directExam}\n--- End of Direct Examination ---`);
           
           const crossExamPrompt = `Counsel for Fenoscadia, you may now cross-examine the witness.`;
@@ -142,7 +157,8 @@ const runSimulationFlow = ai.defineFlow(
                     objection: ObjectionSchema.describe("The opposing counsel's objection, if any."), 
                     ruling: RulingSchema.describe("The tribunal's ruling and assessment."), 
                     witnessAnswer: z.string().describe("The witness's answer to the user's question.") 
-                }) }
+                }) },
+                config: safetyConfig,
             });
             
             if (!crossExamTurn) {
@@ -177,10 +193,12 @@ const runSimulationFlow = ai.defineFlow(
                 """
                 ${newState.transcript.map(t => `${t.speaker}: ${t.text}`).join('\n')}
                 """`,
-                 output: { format: 'text' }
+                 output: { format: 'text' },
+                 config: safetyConfig,
             });
 
-            newState = addTranscript(newState, 'OPPOSING_COUNSEL', opponentClosing!);
+            if (!opponentClosing) throw new Error("AI failed to generate opponent's closing argument.");
+            newState = addTranscript(newState, 'OPPOSING_COUNSEL', opponentClosing);
             newState = addTranscript(newState, 'TRIBUNAL', "Counsel for Fenoscadia, you may now present your closing argument.");
             newState.isAwaitingUserInput = true;
         }
@@ -197,12 +215,14 @@ const runSimulationFlow = ai.defineFlow(
                   Your current case strength is ${newState.caseStrength}%.
                   Adjust the case strength based on the user's closing argument.
                   Provide a new final case strength score and a concluding statement.`,
-                  output: { schema: z.object({ finalStrength: z.number().min(0).max(100), concludingStatement: z.string() }) }
+                  output: { schema: z.object({ finalStrength: z.number().min(0).max(100), concludingStatement: z.string() }) },
+                  config: safetyConfig,
               });
 
-              newState.caseStrength = finalAssessment!.finalStrength;
+              if (!finalAssessment) throw new Error("AI failed to generate a final assessment.");
+              newState.caseStrength = finalAssessment.finalStrength;
               const conclusion = `The Tribunal thanks the parties for their submissions. The hearing is now closed. The Tribunal will deliberate and issue its award in due course.\n\nFinal Assessed Case Strength: ${newState.caseStrength}%`;
-              newState = addTranscript(newState, 'TRIBUNAL', `${finalAssessment!.concludingStatement}\n\n${conclusion}`);
+              newState = addTranscript(newState, 'TRIBUNAL', `${finalAssessment.concludingStatement}\n\n${conclusion}`);
               newState.phase = 'COMPLETE';
           }
         break;

@@ -26,6 +26,14 @@ const threePartAnalysisPrompt = ai.definePrompt({
   name: 'threePartAnalysisPrompt',
   input: {schema: GenerateAnalysisInputSchema},
   output: {schema: ThreePartAnalysisSchema},
+  config: {
+    safetySettings: [
+      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
+      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+    ],
+  },
   prompt: `You are a world-class AI legal analyst. Your task is to provide a concise, multi-faceted analysis of a legal strategy.
 
   Legal Strategy to Analyze:
@@ -64,8 +72,13 @@ const generateAnalysisFlow = ai.defineFlow(
     const highLevelAnalysis = threePartAnalysisResult.output;
     const playbook = adversarialPlaybookResult.adversarialPlaybook;
 
-    if (!highLevelAnalysis || !playbook) {
-      throw new Error('Failed to generate one or more parts of the initial analysis.');
+    if (!highLevelAnalysis) {
+      console.error("Failed to generate threePartAnalysis. AI output did not match schema.", threePartAnalysisResult);
+      throw new Error('Failed to generate the core analysis due to an invalid AI response format.');
+    }
+    if (!playbook) {
+       console.error("Failed to generate adversarialPlaybook. AI output did not match schema.", adversarialPlaybookResult);
+      throw new Error('Failed to generate the adversarial playbook due to an invalid AI response format.');
     }
 
     // Step 2: Generate deep dives for all arguments and weaknesses in parallel

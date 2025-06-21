@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI agent for generating a "deep dive" analysis on a specific point.
@@ -59,7 +60,20 @@ const generateDeepDiveFlow = ai.defineFlow(
     outputSchema: GenerateDeepDiveOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input, { model: 'googleai/gemini-2.5-pro' });
+    const {output} = await prompt(input, { 
+        model: 'googleai/gemini-2.5-pro',
+        config: {
+            safetySettings: [
+              { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+              { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
+              { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+              { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+            ],
+        },
+    });
+    if (!output) {
+      throw new Error('The AI failed to generate a valid deep dive.');
+    }
     return output;
   }
 );
