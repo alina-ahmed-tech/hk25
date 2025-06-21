@@ -26,5 +26,3 @@ export const db: Firestore | null = app ? getFirestore(app) : null;
 
 // Provider for requesting Google API scopes
 export const provider = new GoogleAuthProvider();
-provider.addScope('https://www.googleapis.com/auth/presentations');
-provider.addScope('https://www.googleapis.com/auth/drive.file');

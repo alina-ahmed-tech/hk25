@@ -111,12 +111,12 @@ export type PresentationContent = z.infer<typeof PresentationContentSchema>;
 export const GeneratePresentationInputSchema = z.object({
   analysis: AnalysisDashboardSchema,
   projectName: z.string(),
-  userEmail: z.string().email(),
 });
 export type GeneratePresentationInput = z.infer<typeof GeneratePresentationInputSchema>;
 
 export const GeneratePresentationOutputSchema = z.object({
-  presentationUrl: z.string().url(),
+  fileName: z.string(),
+  fileContent: z.string().describe('Base64 encoded file content.'),
 });
 export type GeneratePresentationOutput = z.infer<typeof GeneratePresentationOutputSchema>;
 
@@ -133,7 +133,6 @@ export type Project = {
   actionPlan?: ActionItem[];
   mainChatHistory?: ChatMessage[];
   simulationState?: SimulationState;
-  presentationUrl?: string;
 };
 
 export type Analysis = z.infer<typeof AnalysisDashboardSchema>;

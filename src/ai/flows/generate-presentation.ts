@@ -1,26 +1,21 @@
 
 'use server';
 /**
- * @fileOverview A Genkit flow to generate a Google Slides presentation from a case analysis.
+ * @fileOverview A Genkit flow to generate a downloadable presentation in DOCX format from a case analysis.
  * This flow takes a structured analysis object, generates presentation content using an LLM,
- * and then uses the Google Slides and Drive APIs via a service account to create
- * and share the presentation.
- *
- * NOTE: This flow requires Google Cloud Service Account credentials with permissions for
- * the Google Slides and Google Drive APIs to be available in the environment.
- * The service account must have the "roles/slides.editor" and "roles/drive.file" roles,
- * or equivalent custom permissions.
+ * converts that content to an HTML string, and then uses the html-to-docx library
+ * to create a Word document buffer, which is returned as a Base64 string.
  */
 
 import { ai } from '@/ai/genkit';
-import { google } from 'googleapis';
 import { z } from 'zod';
+import htmlToDocx from 'html-to-docx';
 import {
   GeneratePresentationInputSchema,
   GeneratePresentationOutputSchema,
   PresentationContentSchema,
 } from '@/lib/types';
-import type { GeneratePresentationInput, GeneratePresentationOutput, PresentationContent } from '@/lib/types';
+import type { GeneratePresentationInput, GeneratePresentationOutput, PresentationContent, Slide } from '@/lib/types';
 
 export async function generatePresentation(input: GeneratePresentationInput): Promise<GeneratePresentationOutput> {
   return generatePresentationFlow(input);
@@ -49,9 +44,52 @@ const presentationContentPrompt = ai.definePrompt({
 
   For each slide, provide concise bullet points and, where appropriate, speaker notes to elaborate on key points.
   `,
-  // Use a powerful model for this complex generation task.
   model: 'googleai/gemini-2.5-flash',
 });
+
+// Helper function to convert JSON content to an HTML string
+const convertContentToHtml = (content: PresentationContent): string => {
+  const slideToHtml = (slide: Slide) => {
+    let slideHtml = `<h1>${slide.title}</h1>`;
+    if (slide.subtitle) {
+      slideHtml += `<h2>${slide.subtitle}</h2>`;
+    }
+    if (slide.bullets && slide.bullets.length > 0) {
+      slideHtml += '<ul>';
+      slide.bullets.forEach(bullet => {
+        slideHtml += `<li>${bullet}</li>`;
+      });
+      slideHtml += '</ul>';
+    }
+    if (slide.speakerNotes) {
+      slideHtml += `<br/><p><em>Speaker Notes: ${slide.speakerNotes}</em></p>`;
+    }
+    // Use page break to simulate new slide
+    return slideHtml + '<br style="page-break-before: always">';
+  };
+
+  let fullHtml = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>${content.title}</title>
+        <style>
+          h1 { font-size: 24pt; font-weight: bold; }
+          h2 { font-size: 18pt; font-weight: normal; }
+          ul { list-style-type: disc; margin-left: 20px; }
+          li { font-size: 12pt; }
+          p { font-size: 10pt; }
+        </style>
+      </head>
+      <body>
+        ${content.slides.map(slideToHtml).join('')}
+      </body>
+    </html>
+  `;
+  
+  return fullHtml;
+};
+
 
 const generatePresentationFlow = ai.defineFlow(
   {
@@ -59,7 +97,7 @@ const generatePresentationFlow = ai.defineFlow(
     inputSchema: GeneratePresentationInputSchema,
     outputSchema: GeneratePresentationOutputSchema,
   },
-  async ({ analysis, projectName, userEmail }) => {
+  async ({ analysis, projectName }) => {
     // Step 1: Generate the structured content for the presentation.
     const { output: presentationContent } = await presentationContentPrompt({ analysis, projectName });
 
@@ -67,87 +105,23 @@ const generatePresentationFlow = ai.defineFlow(
       throw new Error('AI failed to generate presentation content.');
     }
 
-    // Step 2: Authenticate with Google APIs using a Service Account.
-    // This assumes that the GOOGLE_APPLICATION_CREDENTIALS environment variable is set.
-    const auth = new google.auth.GoogleAuth({
-      scopes: [
-        'https://www.googleapis.com/auth/presentations',
-        'https://www.googleapis.com/auth/drive.file',
-      ],
-    });
-    const authClient = await auth.getClient();
-    google.options({ auth: authClient });
-    
-    const slidesService = google.slides('v1');
-    const driveService = google.drive('v3');
+    // Step 2: Convert the structured content to an HTML string.
+    const htmlString = convertContentToHtml(presentationContent);
 
-    // Step 3: Create the blank presentation.
-    const presentation = await slidesService.presentations.create({
-      requestBody: {
-        title: presentationContent.title,
-      },
+    // Step 3: Convert HTML to a DOCX buffer.
+    const fileBuffer = await htmlToDocx(htmlString, undefined, {
+      table: { row: { cantSplit: true } },
+      footer: true,
+      pageNumber: true,
     });
 
-    const presentationId = presentation.data.presentationId;
-    if (!presentationId) {
-      throw new Error('Failed to create Google Slides presentation.');
-    }
-    
-    // Step 4: Build the requests to add slides and content.
-    let requests = [];
-    for (const slide of presentationContent.slides) {
-      const slideId = `slide_${requests.length}`;
-      requests.push({
-        createSlide: {
-          objectId: slideId,
-          slideLayoutReference: {
-            predefinedLayout: slide.bullets ? 'TITLE_AND_BODY' : 'TITLE_ONLY',
-          },
-        },
-      });
-      // Add title
-      requests.push({
-        insertText: {
-          objectId: slideId,
-          text: slide.title,
-          insertionIndex: 0,
-        },
-      });
-      // Add subtitle or bullets
-      if (slide.subtitle) {
-         requests.push({ insertText: { objectId: slideId, text: `\n${slide.subtitle}`, insertionIndex: slide.title.length } });
-      }
-      if (slide.bullets && slide.bullets.length > 0) {
-        requests.push({ insertText: { objectId: slideId, text: `\n${slide.bullets.map(b => `• ${b}`).join('\n')}`, insertionIndex: slide.title.length } });
-      }
-    }
+    // Step 4: Convert the buffer to a Base64 string to send to the client.
+    const base64String = (fileBuffer as Buffer).toString('base64');
 
-    // Step 5: Batch update the presentation with the new slides.
-    if (requests.length > 0) {
-      await slidesService.presentations.batchUpdate({
-        presentationId,
-        requestBody: {
-          requests,
-        },
-      });
-    }
-
-    // Step 6: Share the presentation with the user.
-    await driveService.permissions.create({
-      fileId: presentationId,
-      requestBody: {
-        type: 'user',
-        role: 'writer',
-        emailAddress: userEmail,
-      },
-    });
-
-    // Step 7: Return the URL of the created presentation.
-    const presentationUrl = presentation.data.presentationUrl;
-    if (!presentationUrl) {
-      throw new Error('Could not retrieve presentation URL.');
-    }
-
-    return { presentationUrl };
+    // Step 5: Return the file name and content.
+    return {
+      fileName: `${projectName.replace(/ /g, '_')}_Strategy_Deck.docx`,
+      fileContent: base64String,
+    };
   }
 );

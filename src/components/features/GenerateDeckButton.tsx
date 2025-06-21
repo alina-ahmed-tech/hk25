@@ -4,48 +4,64 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/Spinner';
-import { Presentation, CheckCircle2, AlertTriangle, ChevronRight } from 'lucide-react';
+import { Download, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { generatePresentation } from '@/lib/actions';
 import { getAIErrorMessage } from '@/lib/utils';
 import type { Analysis } from '@/lib/types';
+import { saveAs } from 'file-saver';
 
 type GenerateDeckButtonProps = {
   projectName: string;
   analysis: Analysis;
-  userEmail: string;
-  initialUrl?: string | null;
-  onSuccess: (url: string) => void;
 };
 
-type ButtonState = 'idle' | 'loading' | 'success' | 'error';
+type ButtonState = 'idle' | 'loading' | 'error';
 
-export function GenerateDeckButton({ projectName, analysis, userEmail, initialUrl, onSuccess }: GenerateDeckButtonProps) {
+// Helper to convert Base64 to Blob
+const base64ToBlob = (base64: string, contentType: string): Blob => {
+    const byteCharacters = atob(base64);
+    const byteArrays = [];
+
+    for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+        const slice = byteCharacters.slice(offset, offset + 512);
+        const byteNumbers = new Array(slice.length);
+        for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+    }
+
+    return new Blob(byteArrays, { type: contentType });
+};
+
+
+export function GenerateDeckButton({ projectName, analysis }: GenerateDeckButtonProps) {
   const { toast } = useToast();
-  const [state, setState] = useState<ButtonState>(initialUrl ? 'success' : 'idle');
-  const [presentationUrl, setPresentationUrl] = useState<string | null>(initialUrl || null);
+  const [state, setState] = useState<ButtonState>('idle');
 
   const handleClick = async () => {
-    if (state === 'loading' || state === 'success') return;
+    if (state === 'loading') return;
 
     setState('loading');
     try {
       const result = await generatePresentation({
         projectName,
         analysis,
-        userEmail,
       });
 
-      if (result.presentationUrl) {
-        setPresentationUrl(result.presentationUrl);
-        onSuccess(result.presentationUrl);
-        setState('success');
+      if (result.fileContent) {
+        const blob = base64ToBlob(result.fileContent, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        saveAs(blob, result.fileName);
+        
         toast({
-          title: 'Success!',
-          description: 'Your strategy deck has been generated and shared with you.',
+          title: 'Download Started',
+          description: 'Your strategy deck has been generated and is downloading now.',
         });
+        setState('idle'); // Reset after success
       } else {
-        throw new Error('The presentation URL was not returned.');
+        throw new Error('The generated file was empty.');
       }
     } catch (err) {
       console.error('Error generating presentation:', err);
@@ -62,16 +78,12 @@ export function GenerateDeckButton({ projectName, analysis, userEmail, initialUr
 
   const content = {
     idle: {
-      icon: <Presentation className="mr-2 h-5 w-5" />,
-      text: 'Generate Strategy Deck',
+      icon: <Download className="mr-2 h-5 w-5" />,
+      text: 'Download Strategy Deck',
     },
     loading: {
       icon: <Spinner className="mr-2" />,
       text: 'Generating...',
-    },
-    success: {
-      icon: <CheckCircle2 className="mr-2 h-5 w-5" />,
-      text: 'Open Presentation',
     },
     error: {
       icon: <AlertTriangle className="mr-2 h-5 w-5" />,
@@ -79,17 +91,6 @@ export function GenerateDeckButton({ projectName, analysis, userEmail, initialUr
     },
   };
   
-  if (state === 'success' && presentationUrl) {
-    return (
-        <Button asChild>
-            <a href={presentationUrl} target="_blank" rel="noopener noreferrer">
-                {content.success.icon}
-                {content.success.text}
-            </a>
-        </Button>
-    )
-  }
-
   return (
     <Button onClick={handleClick} disabled={state === 'loading'}>
       {content[state].icon}

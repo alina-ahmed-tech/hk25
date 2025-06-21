@@ -277,17 +277,6 @@ export default function ProjectPage() {
     }
   };
 
-  const handlePresentationSuccess = async (url: string) => {
-    if (!project || !user || !db) return;
-    const updatedProject = { ...project, presentationUrl: url };
-    setProject(updatedProject);
-
-    if (!project.id.startsWith('local-')) {
-        const projectRef = doc(db, 'users', user.uid, 'projects', project.id);
-        await updateDoc(projectRef, { presentationUrl: url });
-    }
-  }
-  
   const renderContent = () => {
     switch (pageState) {
       case 'form':
@@ -348,14 +337,11 @@ export default function ProjectPage() {
                         <Presentation className="h-10 w-10 text-primary mb-4" />
                         <h3 className="font-semibold text-lg mb-2 text-foreground">Generate Strategy Deck</h3>
                         <p className="text-sm text-muted-foreground mb-4">
-                            Automatically create a Google Slides presentation from the complete case analysis.
+                            Automatically create a downloadable Word document from the complete case analysis.
                         </p>
                          <GenerateDeckButton 
                             projectName={project.name}
                             analysis={project.analysis}
-                            userEmail={user.email!}
-                            initialUrl={project.presentationUrl}
-                            onSuccess={handlePresentationSuccess}
                          />
                     </div>
                 </CardContent>
