@@ -8,7 +8,7 @@ const mockUser = {
   uid: 'mock-user-123',
   email: 'test@dialogue.case',
   displayName: 'Test User',
-  photoURL: `https://placehold.co/40x40.png`,
+  photoURL: null,
   // The rest of the properties are to satisfy the 'User' type from firebase/auth
   emailVerified: true,
   isAnonymous: false,

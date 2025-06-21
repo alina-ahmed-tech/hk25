@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { LogOut } from 'lucide-react';
+import { LogOut, User } from 'lucide-react';
 
 import { useAuth } from '@/components/auth/AuthProvider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -22,14 +22,6 @@ export function Header() {
     router.push('/login');
   };
 
-  const getInitials = (name: string | null | undefined) => {
-    if (!name) return 'U';
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('');
-  };
-
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur-sm">
       <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
@@ -47,7 +39,9 @@ export function Header() {
                 <Button variant="ghost" className="flex h-auto items-center justify-start gap-3 p-2">
                     <Avatar className="h-8 w-8">
                         <AvatarImage src={user.photoURL ?? ''} alt={user.displayName ?? 'User'} />
-                        <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
+                        <AvatarFallback>
+                          <User className="h-5 w-5" />
+                        </AvatarFallback>
                     </Avatar>
                      <div className="hidden flex-col items-start text-left md:flex">
                         <span className="text-sm font-medium">{user.displayName}</span>
