@@ -16,7 +16,7 @@ const ChatWithArbiterInputSchema = z.object({
   chatHistory: z.array(z.object({
     role: z.enum(['user', 'arbiter']),
     content: z.string(),
-  })).optional().describe('The chat history between the user and the AI arbiter.'),
+  }).passthrough()).optional().describe('The chat history between the user and the AI arbiter.'),
   caseFacts: z.string().describe('The case facts and initial strategy provided by the user.'),
 });
 export type ChatWithArbiterInput = z.infer<typeof ChatWithArbiterInputSchema>;
@@ -44,7 +44,7 @@ const prompt = ai.definePrompt({
 
   Consider the chat history when formulating your response:
   {{#each chatHistory}}
-  {{#if (eq role \"user\")}}
+  {{#if isUser}}
   Lawyer: {{content}}
   {{else}}
   Arbiter: {{content}}
@@ -60,7 +60,15 @@ const chatWithArbiterFlow = ai.defineFlow(
     outputSchema: ChatWithArbiterOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const augmentedInput = {
+      ...input,
+      chatHistory: input.chatHistory?.map(message => ({
+        ...message,
+        isUser: message.role === 'user',
+      })),
+    };
+
+    const {output} = await prompt(augmentedInput);
     if (!output) {
         throw new Error('The AI failed to generate a valid chat response.');
     }

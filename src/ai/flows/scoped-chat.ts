@@ -18,7 +18,7 @@ const ScopedChatInputSchema = z.object({
   chatHistory: z.array(z.object({
     role: z.enum(['user', 'arbiter']),
     content: z.string(),
-  })).optional().describe('The chat history for the action item.'),
+  }).passthrough()).optional().describe('The chat history for the action item.'),
 });
 export type ScopedChatInput = z.infer<typeof ScopedChatInputSchema>;
 
@@ -42,7 +42,7 @@ Action Item ID: {{{actionItemId}}}
 {{#if chatHistory}}
 Chat History:
 {{#each chatHistory}}
-{{#if (eq role "user")}}
+{{#if isUser}}
 Lawyer: {{{content}}}
 {{else}}
 Arbiter: {{{content}}}
@@ -61,7 +61,15 @@ const scopedChatFlow = ai.defineFlow(
     outputSchema: ScopedChatOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const augmentedInput = {
+      ...input,
+      chatHistory: input.chatHistory?.map(message => ({
+        ...message,
+        isUser: message.role === 'user',
+      })),
+    };
+
+    const {output} = await prompt(augmentedInput);
     if (!output) {
       throw new Error('The AI failed to generate a valid scoped chat response.');
     }
