@@ -14,7 +14,6 @@ import {
   GeneratePresentationInputSchema,
   GeneratePresentationOutputSchema,
   PresentationContentSchema,
-  AnalysisDashboardSchema,
 } from '@/lib/types';
 import type { GeneratePresentationInput, GeneratePresentationOutput, PresentationContent, Slide, Analysis } from '@/lib/types';
 
@@ -22,9 +21,9 @@ export async function generatePresentation(input: GeneratePresentationInput): Pr
   return generatePresentationFlow(input);
 }
 
-// Define a schema for the prompt's input, which expects the parsed analysis object
+// Define a schema for the prompt's input, which expects the analysis as a JSON string.
 const PresentationContentPromptInputSchema = z.object({
-  analysis: AnalysisDashboardSchema,
+  analysis: z.string().describe('A JSON string representation of the complete analysis object.'),
   projectName: z.string(),
 });
 
@@ -38,7 +37,7 @@ const presentationContentPrompt = ai.definePrompt({
 
   Here is the full analysis data:
   \`\`\`json
-  {{{json anlys=analysis}}}
+  {{{analysis}}}
   \`\`\`
   
   Your task is to synthesize this data into a clear, concise, and compelling presentation. Structure the output as a JSON object adhering to the provided schema. Create slides for the following sections:
@@ -105,10 +104,9 @@ const generatePresentationFlow = ai.defineFlow(
     outputSchema: GeneratePresentationOutputSchema,
   },
   async ({ analysis, projectName }) => {
-    // Step 1: Parse the analysis string and generate the structured content.
-    const analysisObject = JSON.parse(analysis) as Analysis;
+    // Step 1: Generate the structured content for the presentation.
     const { output: presentationContent } = await presentationContentPrompt({
-      analysis: analysisObject,
+      analysis, // Pass the JSON string directly
       projectName,
     });
 
