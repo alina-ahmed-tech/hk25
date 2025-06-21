@@ -90,6 +90,7 @@ export type Project = {
   createdAt: any;
   strategy?: string;
   analysis?: z.infer<typeof AnalysisDashboardSchema>;
+  analysisStatus?: 'complete' | 'generating_details';
   actionPlan?: ActionItem[];
   mainChatHistory?: ChatMessage[];
   simulationState?: SimulationState;

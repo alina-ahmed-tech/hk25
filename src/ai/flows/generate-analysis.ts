@@ -73,50 +73,20 @@ const generateAnalysisFlow = ai.defineFlow(
     const playbook = adversarialPlaybookResult.adversarialPlaybook;
 
     if (!highLevelAnalysis) {
-      console.error("Failed to generate threePartAnalysis. AI output did not match schema.", threePartAnalysisResult);
       throw new Error('Failed to generate the core analysis due to an invalid AI response format.');
     }
     if (!playbook) {
-       console.error("Failed to generate adversarialPlaybook. AI output did not match schema.", adversarialPlaybookResult);
       throw new Error('Failed to generate the adversarial playbook due to an invalid AI response format.');
     }
 
-    // Step 2: Generate deep dives for all arguments and weaknesses in parallel
-    const argumentDeepDivePromises = (highLevelAnalysis.advocateBrief || []).map(item => 
-        generateDeepDive({
-            originalStrategy: input.legalStrategy,
-            priorAnalysisSection: JSON.stringify(item),
-            itemToExpand: item.argument
-        }).then(result => ({ ...item, detailedAnalysis: result?.detailedAnalysis || "Error generating detailed analysis for this item." }))
-        .catch(e => {
-            console.error(`Deep dive failed for argument: ${item.argument}`, e);
-            return {...item, detailedAnalysis: "Error generating detailed analysis for this item."};
-        })
-    );
-
-    const weaknessDeepDivePromises = (highLevelAnalysis.identifiedWeaknesses || []).map(item => 
-        generateDeepDive({
-            originalStrategy: input.legalStrategy,
-            priorAnalysisSection: JSON.stringify(item),
-            itemToExpand: item.weakness
-        }).then(result => ({ ...item, detailedAnalysis: result?.detailedAnalysis || "Error generating detailed analysis for this item." }))
-        .catch(e => {
-            console.error(`Deep dive failed for weakness: ${item.weakness}`, e);
-            return {...item, detailedAnalysis: "Error generating detailed analysis for this item."};
-        })
-    );
-
-    const [detailedArguments, detailedWeaknesses] = await Promise.all([
-        Promise.all(argumentDeepDivePromises),
-        Promise.all(weaknessDeepDivePromises),
-    ]);
+    // Step 2: Deep dives are now generated in a separate, asynchronous flow.
     
-    // Step 3: Combine all results into the final dashboard object
+    // Step 3: Combine initial results into the final dashboard object
     return {
       analysisDashboard: {
         ...highLevelAnalysis,
-        advocateBrief: detailedArguments,
-        identifiedWeaknesses: detailedWeaknesses,
+        advocateBrief: highLevelAnalysis.advocateBrief || [],
+        identifiedWeaknesses: highLevelAnalysis.identifiedWeaknesses || [],
         adversarialPlaybook: playbook,
       },
     };

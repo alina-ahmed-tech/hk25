@@ -10,13 +10,14 @@ import { LegalCaseModal } from './LegalCaseModal';
 import ReactMarkdown from 'react-markdown';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useState } from 'react';
+import { Spinner } from '../Spinner';
 
 type AnalysisDashboardProps = {
   analysis: Analysis;
-  strategy?: string;
+  isGeneratingDetails: boolean;
 };
 
-export function AnalysisDashboard({ analysis, strategy }: AnalysisDashboardProps) {
+export function AnalysisDashboard({ analysis, isGeneratingDetails }: AnalysisDashboardProps) {
   const [modalCase, setModalCase] = useState<string | null>(null);
 
   const getVulnerabilityColor = (score: number) => {
@@ -32,6 +33,25 @@ export function AnalysisDashboard({ analysis, strategy }: AnalysisDashboardProps
       case "Low": return "text-yellow-400";
       default: return "text-muted-foreground";
     }
+  }
+
+  const DetailSection = ({ detailedAnalysis }: { detailedAnalysis?: string }) => {
+    if (detailedAnalysis) {
+      return (
+        <div className="mt-4 prose prose-invert prose-sm max-w-none prose-p:text-foreground prose-ul:text-foreground prose-li:text-foreground">
+          <ReactMarkdown>{detailedAnalysis}</ReactMarkdown>
+        </div>
+      );
+    }
+    if (isGeneratingDetails) {
+        return (
+            <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
+                <Spinner size="sm"/>
+                <span>Generating detailed analysis...</span>
+            </div>
+        );
+    }
+    return <p className="mt-4 text-sm text-muted-foreground">Detailed analysis will be generated shortly.</p>
   }
 
   return (
@@ -71,13 +91,7 @@ export function AnalysisDashboard({ analysis, strategy }: AnalysisDashboardProps
                       )}
                     </div>
                      
-                    <div className="mt-4 prose prose-invert prose-sm max-w-none prose-p:text-foreground prose-ul:text-foreground prose-li:text-foreground">
-                      {item.detailedAnalysis ? (
-                          <ReactMarkdown>{item.detailedAnalysis}</ReactMarkdown>
-                      ) : (
-                          <p className="text-sm text-muted-foreground">Detailed analysis was not generated for this item.</p>
-                      )}
-                    </div>
+                    <DetailSection detailedAnalysis={item.detailedAnalysis} />
 
                   </AccordionContent>
                 </AccordionItem>
@@ -113,13 +127,7 @@ export function AnalysisDashboard({ analysis, strategy }: AnalysisDashboardProps
                   <AccordionContent>
                       <p className="text-xs text-muted-foreground mb-4">{weakness.rationale}</p>
                       
-                      <div className="prose prose-invert prose-sm max-w-none prose-p:text-foreground prose-ul:text-foreground prose-li:text-foreground">
-                          {weakness.detailedAnalysis ? (
-                              <ReactMarkdown>{weakness.detailedAnalysis}</ReactMarkdown>
-                          ) : (
-                              <p className="text-sm text-muted-foreground">Detailed analysis was not generated for this item.</p>
-                          )}
-                      </div>
+                      <DetailSection detailedAnalysis={weakness.detailedAnalysis} />
                   </AccordionContent>
                 </AccordionItem>
               ))

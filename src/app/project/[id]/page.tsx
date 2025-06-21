@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, updateDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import type { Project, ActionItem, ChatMessage } from '@/lib/types';
+import type { Project, ActionItem, ChatMessage, Analysis } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +17,7 @@ import { ActionChecklist } from '@/components/features/ActionChecklist';
 import { ChatWindow } from '@/components/features/ChatWindow';
 import { ScopedChatDialog } from '@/components/features/ScopedChatDialog';
 import { ActionPlanDraftDialog } from '@/components/features/ActionPlanDraftDialog';
-import { generateAnalysis, generateActionPlan, generateProjectName } from '@/lib/actions';
+import { generateAnalysis, generateActionPlan, generateProjectName, generateAllDeepDives } from '@/lib/actions';
 import { getAIErrorMessage } from '@/lib/utils';
 import { MessageSquare, ListTodo, Pencil, Rocket, ChevronRight } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -35,6 +35,7 @@ export default function ProjectPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [pageState, setPageState] = useState<PageState>('form');
   const [loading, setLoading] = useState(!isNewProject);
+  const [isGeneratingDetails, setIsGeneratingDetails] = useState(false);
   const [isChatOpen, setChatOpen] = useState(false);
   const [scopedChatItem, setScopedChatItem] = useState<ActionItem | null>(null);
   const [isCreatingPlan, setIsCreatingPlan] = useState(false);
@@ -43,31 +44,7 @@ export default function ProjectPage() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [projectName, setProjectName] = useState('');
 
-  useEffect(() => {
-    if (isNewProject) {
-      setLoading(false);
-      setPageState('form');
-      setProject(null);
-      return;
-    }
-
-    // Handle loading local projects from sessionStorage first
-    const localProjectData = sessionStorage.getItem('pendingLocalProject');
-    if (localProjectData) {
-      sessionStorage.removeItem('pendingLocalProject');
-      const parsedProject = JSON.parse(localProjectData);
-      // Ensure the project ID from session matches the URL
-      if (parsedProject.id === projectId) {
-        parsedProject.createdAt = new Date(parsedProject.createdAt);
-        setProject(parsedProject);
-        setProjectName(parsedProject.name);
-        setPageState('dashboard');
-        setLoading(false);
-        return;
-      }
-    }
-    
-    const fetchProjectData = async () => {
+  const fetchProjectData = useCallback(async () => {
       setLoading(true);
       if (!user || !projectId || !db) {
         setLoading(false);
@@ -92,10 +69,71 @@ export default function ProjectPage() {
         toast({ title: 'Error', description: 'Failed to fetch project data.', variant: 'destructive' });
       }
       setLoading(false);
-    };
+    }, [user, projectId, toast, router]);
 
+
+  useEffect(() => {
+    if (isNewProject) {
+      setLoading(false);
+      setPageState('form');
+      setProject(null);
+      return;
+    }
+
+    if (sessionStorage.getItem(`pending-project-${projectId}`)) {
+      const parsedProject = JSON.parse(sessionStorage.getItem(`pending-project-${projectId}`)!);
+      sessionStorage.removeItem(`pending-project-${projectId}`);
+      setProject(parsedProject);
+      setProjectName(parsedProject.name);
+      setPageState('dashboard');
+      setLoading(false);
+      return;
+    }
+    
     fetchProjectData();
-  }, [user, projectId, toast, isNewProject, router]);
+  }, [projectId, isNewProject, fetchProjectData]);
+  
+  // Effect to trigger background deep dive generation
+  useEffect(() => {
+    const runDeepDives = async (proj: Project) => {
+        if (!proj.strategy || !proj.analysis) return;
+        
+        setIsGeneratingDetails(true);
+        try {
+            const result = await generateAllDeepDives({
+                legalStrategy: proj.strategy,
+                initialAnalysis: proj.analysis
+            });
+
+            const updatedProject = {
+                ...proj,
+                analysis: result.updatedAnalysis,
+                analysisStatus: 'complete' as const
+            };
+            setProject(updatedProject);
+
+            if (db && user && !proj.id.startsWith('local-')) {
+                const projectRef = doc(db, 'users', user.uid, proj.id);
+                await updateDoc(projectRef, { 
+                    analysis: result.updatedAnalysis,
+                    analysisStatus: 'complete'
+                });
+            }
+
+        } catch (error) {
+            console.error("Error generating deep dives:", error);
+            toast({ title: 'Deep Dive Error', description: getAIErrorMessage(error), variant: 'destructive' });
+            // Optionally set status to 'failed'
+        } finally {
+            setIsGeneratingDetails(false);
+        }
+    };
+    
+    if (project?.analysisStatus === 'generating_details') {
+      runDeepDives(project);
+    }
+  }, [project, user, db, toast]);
+
 
   const handleStrategySubmit = async (strategy: string) => {
     if (!user) return;
@@ -106,47 +144,39 @@ export default function ProjectPage() {
         generateProjectName({ strategyText: strategy }),
         generateAnalysis({ legalStrategy: strategy }),
       ]);
-  
-      if (!db) {
-        console.warn("Firebase not configured. Running in local mode.");
-        toast({ title: "Local Mode", description: "Analysis generated. Project will not be saved." });
-
-        const localProject: Project = {
-          id: `local-${Date.now()}`,
-          name: nameResult.projectName,
-          userId: user.uid,
-          strategy: strategy,
-          analysis: analysisResult.analysisDashboard,
-          createdAt: new Date(),
-        };
-
-        const serializableProject = {
-          ...localProject,
-          createdAt: localProject.createdAt.toISOString(),
-        };
-        sessionStorage.setItem('pendingLocalProject', JSON.stringify(serializableProject));
-        
-        router.push(`/project/${localProject.id}`);
-        return;
-      }
-
-      const newProjectData: Omit<Project, 'id' | 'createdAt'> = {
+      
+      const newProjectData: Project = {
+        id: `local-${Date.now()}`, // temp ID
         name: nameResult.projectName,
         userId: user.uid,
         strategy: strategy,
         analysis: analysisResult.analysisDashboard,
+        analysisStatus: 'generating_details',
+        createdAt: new Date(),
       };
       
+      if (!db) {
+        console.warn("Firebase not configured. Running in local mode.");
+        toast({ title: "Local Mode", description: "Analysis generated. Project will not be saved." });
+        const serializableProject = { ...newProjectData, createdAt: newProjectData.createdAt.toISOString() };
+        sessionStorage.setItem(`pending-project-${newProjectData.id}`, JSON.stringify(serializableProject));
+        router.push(`/project/${newProjectData.id}`);
+        return;
+      }
+      
       const projectWithTimestamp = {
-        ...newProjectData,
+        name: newProjectData.name,
+        userId: newProjectData.userId,
+        strategy: newProjectData.strategy,
+        analysis: newProjectData.analysis,
+        analysisStatus: newProjectData.analysisStatus,
         createdAt: serverTimestamp(),
       }
 
       const projectCollectionRef = collection(db, 'users', user.uid, 'projects');
       const newDocRef = await addDoc(projectCollectionRef, projectWithTimestamp);
       
-      toast({ title: 'Success', description: 'Analysis generated and project created.' });
-
+      toast({ title: 'Success', description: 'Analysis generated. Creating project...' });
       router.push(`/project/${newDocRef.id}`);
 
     } catch (error) {
@@ -250,7 +280,7 @@ export default function ProjectPage() {
       case 'dashboard':
         return project?.analysis ? (
           <div className="space-y-8">
-            <AnalysisDashboard analysis={project.analysis} strategy={project.strategy} />
+            <AnalysisDashboard analysis={project.analysis} isGeneratingDetails={isGeneratingDetails} />
             
             <Card className="bg-card/60 backdrop-blur-sm border-border/50 shadow-xl shadow-black/20">
                 <CardHeader>

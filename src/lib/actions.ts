@@ -20,12 +20,20 @@ import { runSimulation as runSimulationFlow } from '@/ai/flows/run-simulation';
 import type { RunSimulationInput, RunSimulationOutput } from '@/ai/flows/run-simulation';
 import { generateDeepDive as generateDeepDiveFlow } from '@/ai/flows/generate-deep-dive';
 import type { GenerateDeepDiveInput, GenerateDeepDiveOutput } from '@/ai/flows/generate-deep-dive';
+import { generateAllDeepDives as generateAllDeepDivesFlow } from '@/ai/flows/generate-all-deep-dives';
+import type { GenerateAllDeepDivesInput, GenerateAllDeepDivesOutput } from '@/ai/flows/generate-all-deep-dives';
 
 
 export async function generateAnalysis(
   input: GenerateAnalysisInput
 ): Promise<GenerateAnalysisOutput> {
   return await genAnalysisFlow(input);
+}
+
+export async function generateAllDeepDives(
+  input: GenerateAllDeepDivesInput
+): Promise<GenerateAllDeepDivesOutput> {
+  return await generateAllDeepDivesFlow(input);
 }
 
 export async function generateActionPlan(
