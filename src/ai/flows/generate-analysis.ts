@@ -57,7 +57,7 @@ const generateAnalysisFlow = ai.defineFlow(
   async input => {
     // Step 1: Generate high-level analysis and playbook in parallel
     const [threePartAnalysisResult, adversarialPlaybookResult] = await Promise.all([
-      threePartAnalysisPrompt(input, { model: 'googleai/gemini-1.5-pro' }),
+      threePartAnalysisPrompt(input, { model: 'googleai/gemini-2.5-pro' }),
       generateAdversarialPlaybook(input),
     ]);
 
