@@ -42,25 +42,16 @@ Action Item ID: {{{actionItemId}}}
 {{#if chatHistory}}
 Chat History:
 {{#each chatHistory}}
-{{#ifCond role '===' 'user'}}
+{{#if (eq role "user")}}
 Lawyer: {{{content}}}
 {{else}}
 Arbiter: {{{content}}}
-{{/ifCond}}
+{{/if}}
 {{/each}}
 {{/if}}
 
 Lawyer: {{{message}}}
 Arbiter:`, // The model will complete this
-  templateHelpers: {
-    ifCond: function (v1: any, operator: any, v2: any, options: any) {
-      if (operator === '===' && v1 === v2) {
-        return options.fn(this);
-      } else {
-        return options.inverse(this);
-      }
-    },
-  },
 });
 
 const scopedChatFlow = ai.defineFlow(
