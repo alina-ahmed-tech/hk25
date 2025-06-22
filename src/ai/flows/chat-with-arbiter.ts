@@ -50,7 +50,7 @@ const prompt = ai.definePrompt({
   Arbiter: {{content}}
   {{/if}}
   {{/each}}
-  Arbiter:`, // The Arbiter: prompt is intentionally at the end, outside the {{#each}} loop
+  Arbiter:`,
 });
 
 const chatWithArbiterFlow = ai.defineFlow(

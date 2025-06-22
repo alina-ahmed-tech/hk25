@@ -26,7 +26,7 @@ export async function optimizePrompt(input: OptimizePromptInput): Promise<Optimi
 }
 
 const prompt = ai.definePrompt({
-  name: 'optimizePromptFlow',
+  name: 'optimizePromptPrompt',
   input: {schema: OptimizePromptInputSchema},
   output: {schema: OptimizePromptOutputSchema},
   prompt: `You are an AI assistant for a legal tech app. Your task is to take a user's raw, unstructured text about a legal case and refine it into a well-structured prompt. A good prompt should be organized into sections like 'Case Facts', 'Key Parties', 'Core Legal Question(s)', and 'Initial Strategy/Arguments'.

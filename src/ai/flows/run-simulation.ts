@@ -12,8 +12,6 @@ import { z } from 'zod';
 import {
   SimulationStateSchema,
   RunSimulationInputSchema,
-  SpeakerSchema,
-  TranscriptEntrySchema,
   ObjectionSchema,
   RulingSchema,
 } from '@/lib/simulation-types';

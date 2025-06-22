@@ -3,17 +3,16 @@
 
 /**
  * @fileOverview This file defines the generateAnalysis flow. It performs a two-phase analysis:
- * 1. Generates a high-level analysis and adversarial playbook using Gemini 2.5 Pro.
- * 2. Generates a detailed "deep dive" for each argument and weakness from the high-level analysis.
- * It then combines everything into a single, comprehensive analysis object.
+ * 1. Generates a high-level analysis and adversarial playbook.
+ * 2. Triggers a background flow to generate "deep dives" for each item.
+ * It then combines the initial results into a single, comprehensive analysis object.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'zod';
 import {generateAdversarialPlaybook} from './generate-adversarial-playbook';
 import { ThreePartAnalysisSchema, AnalysisDashboardSchema, GenerateAnalysisInputSchema } from '@/lib/types';
-import type { Analysis, LegalArgument, Weakness } from '@/lib/types';
-import { generateDeepDive } from './generate-deep-dive';
+import type { Analysis } from '@/lib/types';
 
 export type GenerateAnalysisInput = z.infer<typeof GenerateAnalysisInputSchema>;
 export type GenerateAnalysisOutput = { analysisDashboard: Analysis };
@@ -79,9 +78,7 @@ const generateAnalysisFlow = ai.defineFlow(
       throw new Error('Failed to generate the adversarial playbook due to an invalid AI response format.');
     }
 
-    // Step 2: Deep dives are now generated in a separate, asynchronous flow.
-    
-    // Step 3: Combine initial results into the final dashboard object
+    // Step 2: Combine initial results into the final dashboard object
     return {
       analysisDashboard: {
         ...highLevelAnalysis,

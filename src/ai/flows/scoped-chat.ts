@@ -36,6 +36,14 @@ const prompt = ai.definePrompt({
   name: 'scopedChatPrompt',
   input: {schema: ScopedChatInputSchema},
   output: {schema: ScopedChatOutputSchema},
+  config: {
+    safetySettings: [
+      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
+      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+    ],
+  },
   prompt: `You are an AI arbiter assisting a lawyer with a specific action item from their case plan.
 
 The action item being discussed is:
@@ -53,7 +61,7 @@ Arbiter: {{{content}}}
 {{/if}}
 
 Lawyer: {{{message}}}
-Arbiter:`, // The model will complete this
+Arbiter:`,
 });
 
 const scopedChatFlow = ai.defineFlow(
@@ -71,16 +79,7 @@ const scopedChatFlow = ai.defineFlow(
       })),
     };
 
-    const {output} = await prompt(augmentedInput, {
-        config: {
-            safetySettings: [
-              { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
-              { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
-              { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
-              { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
-            ],
-        },
-    });
+    const {output} = await prompt(augmentedInput);
     if (!output) {
       throw new Error('The AI failed to generate a valid scoped chat response.');
     }

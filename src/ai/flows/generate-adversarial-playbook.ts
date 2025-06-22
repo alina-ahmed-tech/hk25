@@ -32,6 +32,14 @@ const prompt = ai.definePrompt({
   name: 'generateAdversarialPlaybookPrompt',
   input: {schema: GenerateAdversarialPlaybookInputSchema},
   output: {schema: AdversarialPlaybookSchema},
+  config: {
+    safetySettings: [
+      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
+      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+    ],
+  },
   prompt: `You are a master legal strategist with expertise in international arbitration, thinking multiple moves ahead. Your task is to create an exceptionally deep "Adversarial Playbook" based on the provided legal strategy. Adhere strictly to the provided JSON schema. Fields marked as optional in the schema can be omitted if there is no relevant information to include.
 
 Legal Strategy Document:
@@ -53,16 +61,7 @@ const generateAdversarialPlaybookFlow = ai.defineFlow(
     outputSchema: GenerateAdversarialPlaybookOutputSchema,
   },
   async input => {
-    const {output: playbook} = await prompt(input, { 
-      config: {
-        safetySettings: [
-          { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
-          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
-          { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
-          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
-        ],
-      },
-    });
+    const {output: playbook} = await prompt(input);
     
     if (!playbook) {
       throw new Error('The AI failed to generate a valid adversarial playbook.');
