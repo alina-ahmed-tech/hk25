@@ -55,29 +55,29 @@ const presentationContentPrompt = ai.definePrompt({
 // Helper function to convert JSON content to an HTML string
 const convertContentToHtml = (content: PresentationContent): string => {
   const slideToHtml = (slide: Slide) => {
-    let slideHtml = `<h1>${slide.title}</h1>`;
+    let slideHtml = \`<h1>\${slide.title}</h1>\`;
     if (slide.subtitle) {
-      slideHtml += `<h2>${slide.subtitle}</h2>`;
+      slideHtml += \`<h2>\${slide.subtitle}</h2>\`;
     }
     if (slide.bullets && slide.bullets.length > 0) {
       slideHtml += '<ul>';
       slide.bullets.forEach(bullet => {
-        slideHtml += `<li>${bullet}</li>`;
+        slideHtml += \`<li>\${bullet}</li>\`;
       });
       slideHtml += '</ul>';
     }
     if (slide.speakerNotes) {
-      slideHtml += `<br/><p><em>Speaker Notes: ${slide.speakerNotes}</em></p>`;
+      slideHtml += \`<br/><p><em>Speaker Notes: \${slide.speakerNotes}</em></p>\`;
     }
     // Use page break to simulate new slide
     return slideHtml + '<br style="page-break-before: always">';
   };
 
-  let fullHtml = `
+  let fullHtml = \`
     <!DOCTYPE html>
     <html>
       <head>
-        <title>${content.title}</title>
+        <title>\${content.title}</title>
         <style>
           h1 { font-size: 24pt; font-weight: bold; }
           h2 { font-size: 18pt; font-weight: normal; }
@@ -87,10 +87,10 @@ const convertContentToHtml = (content: PresentationContent): string => {
         </style>
       </head>
       <body>
-        ${content.slides.map(slideToHtml).join('')}
+        \${content.slides.map(slideToHtml).join('')}
       </body>
     </html>
-  `;
+  \`;
   
   return fullHtml;
 };
@@ -128,7 +128,7 @@ const generatePresentationFlow = ai.defineFlow(
 
     // Step 5: Return the file name and content.
     return {
-      fileName: `${projectName.replace(/ /g, '_')}_Strategy_Deck.docx`,
+      fileName: \`\${projectName.replace(/ /g, '_')}_Strategy_Deck.docx\`,
       fileContent: base64String,
     };
   }

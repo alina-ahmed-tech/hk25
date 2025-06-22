@@ -30,15 +30,6 @@ const addTranscript = (state: SimulationState, speaker: Speaker, text: string): 
   return { ...state, transcript: [...state.transcript, newEntry] };
 };
 
-const safetyConfig = {
-    safetySettings: [
-      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
-      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
-      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
-      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
-    ],
-};
-
 const runSimulationFlow = ai.defineFlow(
   {
     name: 'runSimulationFlow',
@@ -72,7 +63,6 @@ const runSimulationFlow = ai.defineFlow(
           
           Your Opening Statement:`,
           output: { format: 'text' },
-          config: safetyConfig,
       });
       
       if (!opponentOpening) throw new Error("AI failed to generate opponent's opening statement.");
@@ -102,7 +92,6 @@ const runSimulationFlow = ai.defineFlow(
               User's Statement: """${input.userAction.payload}"""
               `,
               output: { schema: z.object({ newStrength: z.number().min(0).max(100) }) },
-              config: safetyConfig,
           });
           
           if (!assessment) throw new Error("AI failed to assess opening statements.");
@@ -122,7 +111,6 @@ const runSimulationFlow = ai.defineFlow(
                 'Dr. Thorne (Simulated): [Answer]'
               `,
               output: { format: 'text' },
-              config: safetyConfig,
           });
           
           if (!directExam) throw new Error("AI failed to simulate direct examination.");
@@ -152,7 +140,6 @@ const runSimulationFlow = ai.defineFlow(
                     ruling: RulingSchema.describe("The tribunal's ruling and assessment."), 
                     witnessAnswer: z.string().describe("The witness's answer to the user's question.") 
                 }) },
-                config: safetyConfig,
             });
             
             if (!crossExamTurn) {
@@ -187,7 +174,6 @@ const runSimulationFlow = ai.defineFlow(
                 ${newState.transcript.map(t => `${t.speaker}: ${t.text}`).join('\n')}
                 """`,
                  output: { format: 'text' },
-                 config: safetyConfig,
             });
 
             if (!opponentClosing) throw new Error("AI failed to generate opponent's closing argument.");
@@ -208,7 +194,6 @@ const runSimulationFlow = ai.defineFlow(
                   Adjust the case strength based on the user's closing argument.
                   Provide a new final case strength score and a concluding statement.`,
                   output: { schema: z.object({ finalStrength: z.number().min(0).max(100), concludingStatement: z.string() }) },
-                  config: safetyConfig,
               });
 
               if (!finalAssessment) throw new Error("AI failed to generate a final assessment.");

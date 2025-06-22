@@ -41,14 +41,6 @@ const prompt = ai.definePrompt({
   name: 'generateActionPlanPrompt',
   input: {schema: GenerateActionPlanInputSchema},
   output: {schema: GenerateActionPlanOutputSchema},
-  config: {
-    safetySettings: [
-      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
-      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
-      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
-      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
-    ],
-  },
   prompt: `You are an AI assistant designed to generate an actionable checklist of tasks for lawyers.
 
 Your task is to create a list of actionable tasks based on the initial AI analysis of a legal strategy AND the follow-up conversation with the lawyer. The checklist should be deeply personalized to the user's specific questions and concerns raised in the chat.

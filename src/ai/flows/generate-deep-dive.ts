@@ -31,14 +31,6 @@ const prompt = ai.definePrompt({
   name: 'generateDeepDivePrompt',
   input: {schema: GenerateDeepDiveInputSchema},
   output: {schema: GenerateDeepDiveOutputSchema},
-  config: {
-    safetySettings: [
-      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
-      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
-      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
-      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
-    ],
-  },
   prompt: `You are a world-class legal analyst AI. Your task is to provide an exceptionally detailed, "deep dive" explanation of a specific point from a prior, high-level analysis you have already conducted.
 
 Context:
