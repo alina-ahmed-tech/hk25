@@ -45,7 +45,7 @@ const optimizePromptFlow = ai.defineFlow(
     outputSchema: OptimizePromptOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input, { model: 'googleai/gemini-2.5-flash-preview' });
+    const {output} = await prompt(input);
     if (!output) {
       throw new Error('The AI failed to generate a valid prompt suggestion.');
     }
