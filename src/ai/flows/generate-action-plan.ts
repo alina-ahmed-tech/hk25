@@ -80,7 +80,7 @@ const generateActionPlanFlow = ai.defineFlow(
     };
 
     const {output} = await prompt(augmentedInput, {
-      model: 'googleai/gemini-pro',
+      model: 'googleai/gemini-2.5-flash',
       config: {
         safetySettings: [
           { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },

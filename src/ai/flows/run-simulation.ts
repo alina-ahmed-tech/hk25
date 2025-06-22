@@ -63,7 +63,7 @@ const runSimulationFlow = ai.defineFlow(
       state.phase = 'OPENING_STATEMENTS';
       
       const { output: opponentOpening } = await ai.generate({
-          model: 'googleai/gemini-pro',
+          model: 'googleai/gemini-2.5-flash',
           prompt: `You are the counsel for the Republic of Kronos, the Respondent in an international arbitration. The case concerns an environmental counterclaim against the Claimant, Fenoscadia Limited.
           Your task is to generate a concise, powerful opening statement (2-3 paragraphs) based on the Claimant's provided strategy.
           Summarize your case on contamination, health impacts, and costs. Be assertive and confident.
@@ -96,7 +96,7 @@ const runSimulationFlow = ai.defineFlow(
           newState = addTranscript(newState, 'USER', input.userAction.payload!);
 
           const { output: assessment } = await ai.generate({
-              model: 'googleai/gemini-pro',
+              model: 'googleai/gemini-2.5-flash',
               prompt: `As an expert arbitral tribunal, assess the user's opening statement against the opponent's.
               Your current case strength is ${newState.caseStrength}%.
               Adjust the case strength based on the persuasiveness, clarity, and legal strength of the user's statement compared to the opponent's.
@@ -121,7 +121,7 @@ const runSimulationFlow = ai.defineFlow(
           newState.currentWitness = { name: witnessName, background: witnessBackground };
 
            const { output: directExam } = await ai.generate({
-              model: 'googleai/gemini-pro',
+              model: 'googleai/gemini-2.5-flash',
               prompt: `Simulate a brief direct examination (3-4 questions and answers) by Kronos's counsel of their expert, ${witnessName}, whose background is: ${witnessBackground}. The goal is to build Kronos's case. Format as a series of exchanges. Example:
                 'Kronos Counsel: [Question]'
                 'Dr. Thorne (Simulated): [Answer]'
@@ -145,7 +145,7 @@ const runSimulationFlow = ai.defineFlow(
             newState = addTranscript(newState, 'USER', input.userAction.payload!);
 
             const { output: crossExamTurn } = await ai.generate({
-                model: 'googleai/gemini-pro',
+                model: 'googleai/gemini-2.5-flash',
                 prompt: `You are an Arbitral Tribunal simulation engine. Given the user's question to the witness, first, as the Opposing Counsel, decide if you should object. If so, generate the objection.
                 Then, as the Tribunal, rule on the objection, provide a coaching tip if the user's question was weak or the objection was valid, and calculate the impact on case strength (-10 to +10). Finally, generate the witness's answer.
                 
@@ -186,7 +186,7 @@ const runSimulationFlow = ai.defineFlow(
             newState.phase = 'CLOSING_ARGUMENTS';
 
             const { output: opponentClosing } = await ai.generate({
-                model: 'googleai/gemini-pro',
+                model: 'googleai/gemini-2.5-flash',
                 prompt: `You are the counsel for the Republic of Kronos. Deliver a powerful closing argument, synthesizing your case based on the entire hearing transcript.
                 
                 Hearing Transcript:
@@ -210,7 +210,7 @@ const runSimulationFlow = ai.defineFlow(
               newState = addTranscript(newState, 'USER', input.userAction.payload!);
 
               const { output: finalAssessment } = await ai.generate({
-                  model: 'googleai/gemini-pro',
+                  model: 'googleai/gemini-2.5-flash',
                   prompt: `As an expert arbitral tribunal, give a final assessment of the user's performance.
                   Your current case strength is ${newState.caseStrength}%.
                   Adjust the case strength based on the user's closing argument.
