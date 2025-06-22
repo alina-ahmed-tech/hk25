@@ -1,4 +1,3 @@
-// This file will be created.
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lightbulb, Scale } from 'lucide-react';
@@ -12,7 +11,7 @@ type RightPanelProps = {
 
 export function RightPanel({ tribunalLastSaid, caseStrength, coachingTip }: RightPanelProps) {
   return (
-    <Card className="flex flex-col bg-card/60 backdrop-blur-sm border-amber-400/20 shadow-xl shadow-black/20">
+    <Card className="flex flex-col border-amber-400/20">
       <CardHeader>
         <div className="flex items-center gap-3 text-amber-400">
           <Scale className="h-6 w-6" />

@@ -1,4 +1,3 @@
-// This file will be created.
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { SimulationPhase } from '@/lib/simulation-types';

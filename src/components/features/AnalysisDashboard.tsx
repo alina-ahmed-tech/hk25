@@ -57,7 +57,7 @@ export function AnalysisDashboard({ analysis, isGeneratingDetails }: AnalysisDas
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 animate-fade-in">
       {/* Advocate's Brief */}
-      <Card className="bg-card backdrop-blur-lg border shadow-xl shadow-black/20">
+      <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-secondary rounded-lg"><Scale className="h-6 w-6 text-sky-400" /></div>
@@ -104,7 +104,7 @@ export function AnalysisDashboard({ analysis, isGeneratingDetails }: AnalysisDas
       </Card>
       
       {/* Identified Weaknesses */}
-      <Card className="bg-card backdrop-blur-lg border shadow-xl shadow-black/20">
+      <Card>
         <CardHeader>
            <div className="flex items-center gap-3">
             <div className="p-2 bg-secondary rounded-lg"><ThumbsDown className="h-6 w-6 text-red-400" /></div>
@@ -139,7 +139,7 @@ export function AnalysisDashboard({ analysis, isGeneratingDetails }: AnalysisDas
       </Card>
 
       {/* Arbiter's Synthesis */}
-      <Card className="bg-card backdrop-blur-lg border shadow-xl shadow-black/20">
+      <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
              <div className="p-2 bg-secondary rounded-lg"><Lightbulb className="h-6 w-6 text-amber-400" /></div>
@@ -198,7 +198,7 @@ export function AnalysisDashboard({ analysis, isGeneratingDetails }: AnalysisDas
       </Card>
 
       {/* Adversarial Playbook */}
-      <Card className="bg-card backdrop-blur-lg border shadow-xl shadow-black/20 lg:col-span-2 xl:col-span-1">
+      <Card className="lg:col-span-2 xl:col-span-1">
         <CardHeader>
             <div className="flex items-center gap-3">
                 <div className="p-2 bg-secondary rounded-lg"><ShieldQuestion className="h-6 w-6 text-purple-400" /></div>

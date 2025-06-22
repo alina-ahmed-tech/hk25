@@ -59,7 +59,7 @@ export default function DashboardPage() {
           {cases.map((caseItem) => (
             <Card 
               key={caseItem.id} 
-              className="bg-card backdrop-blur-lg border hover:border-primary/80 hover:shadow-xl hover:shadow-primary/10 transition-all cursor-pointer group"
+              className="hover:border-primary/80 hover:-translate-y-1 transition-all duration-300 cursor-pointer group"
               onClick={() => router.push(`/project/${caseItem.id}`)}
             >
               <CardHeader>
@@ -76,7 +76,7 @@ export default function DashboardPage() {
             </Card>
           ))}
           <Card
-            className="flex flex-col items-center justify-center text-center py-12 bg-card/60 backdrop-blur-sm border-dashed border-border/50 hover:border-primary/80 hover:shadow-xl hover:shadow-primary/10 transition-all cursor-pointer group min-h-[220px]"
+            className="flex flex-col items-center justify-center text-center py-12 border-dashed border-border/50 hover:border-primary/80 hover:-translate-y-1 transition-all duration-300 cursor-pointer group min-h-[220px]"
             onClick={() => router.push('/project/new')}
           >
             <CardHeader>

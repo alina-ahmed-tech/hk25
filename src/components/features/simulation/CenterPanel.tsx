@@ -1,4 +1,3 @@
-// This file will be created.
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -103,7 +102,7 @@ export function CenterPanel({ transcript, isAwaitingUserInput, isLoading, curren
   };
   
   return (
-    <Card className="col-span-1 lg:col-span-2 flex flex-col bg-card/60 backdrop-blur-sm border-border/20 shadow-xl shadow-black/20">
+    <Card className="col-span-1 lg:col-span-2 flex flex-col">
       <CardHeader>
         <CardTitle className="font-headline text-2xl text-primary flex items-center gap-3">
           <Mic className="h-6 w-6" /> The Record

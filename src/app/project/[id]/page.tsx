@@ -288,7 +288,7 @@ export default function ProjectPage() {
           <div className="space-y-8">
             <AnalysisDashboard analysis={project.analysis} isGeneratingDetails={isGeneratingDetails} />
             
-            <Card className="bg-card/60 backdrop-blur-sm border-border/50 shadow-xl shadow-black/20">
+            <Card>
                 <CardHeader>
                     <CardTitle className="font-headline text-2xl text-primary">Next Steps</CardTitle>
                 </CardHeader>

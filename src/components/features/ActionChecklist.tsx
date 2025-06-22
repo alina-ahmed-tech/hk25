@@ -21,7 +21,7 @@ export function ActionChecklist({ items, onUpdate, onDiscuss }: ActionChecklistP
     };
 
     return (
-        <Card className="bg-card/60 backdrop-blur-sm border-border shadow-xl shadow-black/20">
+        <Card>
             <CardHeader>
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-secondary rounded-lg"><ListTodo className="h-6 w-6 text-primary" /></div>

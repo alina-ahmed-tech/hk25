@@ -101,10 +101,15 @@ export default {
             boxShadow: '0 0 20px 10px rgba(var(--glow-color), 0.3)',
           },
         },
-        'gradient-bg': {
+        'liquid-flow': {
           '0%': { backgroundPosition: '0% 50%' },
           '50%': { backgroundPosition: '100% 50%' },
           '100%': { backgroundPosition: '0% 50%' },
+        },
+        morph: {
+          '0%': { borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%' },
+          '50%': { borderRadius: '30% 60% 70% 40% / 50% 60% 30% 60%' },
+          '100%': { borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%' },
         },
         'gauge_fill': {
             from: { 'stroke-dashoffset': '339.292' },
@@ -115,7 +120,8 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in': 'fade-in 0.5s ease-out forwards',
         'pulse-glow': 'pulse-glow 2s infinite ease-in-out',
-        'gradient-bg': 'gradient-bg 15s ease infinite',
+        'liquid-flow': 'liquid-flow 15s ease infinite',
+        'morph': 'morph 8s ease-in-out infinite',
         'gauge_fill': 'gauge_fill 1s ease-out forwards',
       },
       backgroundSize: {

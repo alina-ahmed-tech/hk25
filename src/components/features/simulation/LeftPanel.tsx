@@ -1,4 +1,3 @@
-// This file will be created.
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { User } from 'lucide-react';
@@ -9,7 +8,7 @@ type LeftPanelProps = {
 
 export function LeftPanel({ opponentLastSaid }: LeftPanelProps) {
   return (
-    <Card className="flex flex-col bg-card/60 backdrop-blur-sm border-destructive/20 shadow-xl shadow-black/20">
+    <Card className="flex flex-col border-destructive/20">
       <CardHeader>
         <div className="flex items-center gap-3 text-red-400">
           <User className="h-6 w-6" />
