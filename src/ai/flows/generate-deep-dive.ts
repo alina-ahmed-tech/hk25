@@ -61,7 +61,7 @@ const generateDeepDiveFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input, { 
-        model: 'googleai/gemini-2.5-flash',
+        model: 'googleai/gemini-pro',
         config: {
             safetySettings: [
               { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
