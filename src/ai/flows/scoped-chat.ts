@@ -72,7 +72,7 @@ const scopedChatFlow = ai.defineFlow(
     };
 
     const {output} = await prompt(augmentedInput, {
-        model: 'googleai/gemini-experimental',
+        model: 'googleai/gemini-2.5-flash-preview',
         config: {
             safetySettings: [
               { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
