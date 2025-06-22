@@ -50,7 +50,7 @@ const presentationContentPrompt = ai.definePrompt({
 
   For each slide, provide concise bullet points and, where appropriate, speaker notes to elaborate on key points.
   `,
-  model: 'googleai/gemini-2.5-flash',
+  model: 'googleai/gemini-experimental',
 });
 
 // Helper function to convert JSON content to an HTML string
