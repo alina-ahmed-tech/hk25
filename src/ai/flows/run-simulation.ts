@@ -51,7 +51,7 @@ const runSimulationFlow = ai.defineFlow(
       state = addTranscript(state, 'TRIBUNAL', tribunalOpeningText);
       state.phase = 'OPENING_STATEMENTS';
       
-      const { output: opponentOpening } = await ai.generate({
+      const { text: opponentOpening } = await ai.generate({
           prompt: `You are the counsel for the Republic of Kronos, the Respondent in an international arbitration. The case concerns an environmental counterclaim against the Claimant, Fenoscadia Limited.
           Your task is to generate a concise, powerful opening statement (2-3 paragraphs) based on the Claimant's provided strategy.
           Summarize your case on contamination, health impacts, and costs. Be assertive and confident.
@@ -105,7 +105,7 @@ const runSimulationFlow = ai.defineFlow(
           newState.phase = 'WITNESS_EXAMINATION';
           newState.currentWitness = { name: witnessName, background: witnessBackground };
 
-           const { output: directExam } = await ai.generate({
+           const { text: directExam } = await ai.generate({
               prompt: `Simulate a brief direct examination (3-4 questions and answers) by Kronos's counsel of their expert, ${witnessName}, whose background is: ${witnessBackground}. The goal is to build Kronos's case. Format as a series of exchanges. Example:
                 'Kronos Counsel: [Question]'
                 'Dr. Thorne (Simulated): [Answer]'
@@ -166,7 +166,7 @@ const runSimulationFlow = ai.defineFlow(
             newState = addTranscript(newState, 'TRIBUNAL', closingPrompt);
             newState.phase = 'CLOSING_ARGUMENTS';
 
-            const { output: opponentClosing } = await ai.generate({
+            const { text: opponentClosing } = await ai.generate({
                 prompt: `You are the counsel for the Republic of Kronos. Deliver a powerful closing argument, synthesizing your case based on the entire hearing transcript.
                 
                 Hearing Transcript:
