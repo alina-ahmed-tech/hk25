@@ -28,6 +28,16 @@ export const AdversarialPlaybookSchema = z.object({
 });
 
 // NEW Schemas for Judge and Lawyer Profiles
+export const GenerateJudgeProfileInputSchema = z.object({
+  judgeName: z.string().describe('The full name of the judge to be profiled.'),
+});
+export type GenerateJudgeProfileInput = z.infer<typeof GenerateJudgeProfileInputSchema>;
+
+export const GenerateLawyerProfileInputSchema = z.object({
+  lawyerName: z.string().describe('The full name of the lawyer to be profiled.'),
+});
+export type GenerateLawyerProfileInput = z.infer<typeof GenerateLawyerProfileInputSchema>;
+
 export const JudgeProfileSchema = z.object({
   name: z.string(),
   profileSummary: z.string().describe("A concise summary of the judge's judicial philosophy, temperament, and key characteristics."),

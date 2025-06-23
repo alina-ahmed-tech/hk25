@@ -6,12 +6,8 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import {LawyerProfileSchema} from '@/lib/types';
+import {LawyerProfileSchema, GenerateLawyerProfileInputSchema, type GenerateLawyerProfileInput} from '@/lib/types';
 
-export const GenerateLawyerProfileInputSchema = z.object({
-  lawyerName: z.string().describe('The full name of the lawyer to be profiled.'),
-});
-export type GenerateLawyerProfileInput = z.infer<typeof GenerateLawyerProfileInputSchema>;
 
 export async function generateLawyerProfile(input: GenerateLawyerProfileInput): Promise<z.infer<typeof LawyerProfileSchema>> {
   return generateLawyerProfileFlow(input);
