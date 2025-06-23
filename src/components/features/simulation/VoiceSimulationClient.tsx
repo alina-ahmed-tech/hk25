@@ -8,7 +8,7 @@ import { getAIErrorMessage } from '@/lib/utils';
 import { useSpeechToText } from '@/hooks/useSpeechToText';
 import { Spinner } from '@/components/Spinner';
 import { Button } from '@/components/ui/button';
-import { Mic, MicOff, Square } from 'lucide-react';
+import { Mic, Square } from 'lucide-react';
 import { AvatarDisplay } from './AvatarDisplay';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -26,7 +26,8 @@ type VoiceSimulationClientProps = {
 export function VoiceSimulationClient({ project, onSaveState }: VoiceSimulationClientProps) {
   const { toast } = useToast();
   const [state, setState] = useState<SimulationState | null>(project.simulationState || null);
-  const [isLoading, setIsLoading] = useState(!project.simulationState);
+  const [isTurnLoading, setIsTurnLoading] = useState(!project.simulationState);
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [audioQueue, setAudioQueue] = useState<AudioQueueItem[]>([]);
@@ -38,7 +39,7 @@ export function VoiceSimulationClient({ project, onSaveState }: VoiceSimulationC
   const { isListening, transcript, startListening, stopListening } = useSpeechToText();
 
   const runSimulationTurn = useCallback(async (userAction?: UserAction) => {
-    setIsLoading(true);
+    setIsTurnLoading(true);
     setError(null);
     try {
       const newState = await runSimulation({
@@ -54,26 +55,34 @@ export function VoiceSimulationClient({ project, onSaveState }: VoiceSimulationC
       setError(errorMessage);
       toast({ title: 'Simulation Error', description: errorMessage, variant: 'destructive' });
     } finally {
-      setIsLoading(false);
+      setIsTurnLoading(false);
     }
   }, [project, state, onSaveState, toast]);
 
+  // Initial run to setup the simulation
   useEffect(() => {
     if (!state) {
       runSimulationTurn();
     }
   }, [state, runSimulationTurn]);
 
+  // Process new transcript entries to generate audio sequentially
   useEffect(() => {
     const processTranscript = async () => {
       if (!state || state.transcript.length <= processedTranscriptIndex.current) return;
 
       const newEntries = state.transcript.slice(processedTranscriptIndex.current);
+      
+      if (newEntries.some(e => ['TRIBUNAL', 'OPPOSING_COUNSEL', 'WITNESS', 'COACHING'].includes(e.speaker))) {
+        setIsGeneratingAudio(true);
+      }
+
       const newAudioItems: AudioQueueItem[] = [];
 
       for (const entry of newEntries) {
         if (['TRIBUNAL', 'OPPOSING_COUNSEL', 'WITNESS', 'COACHING'].includes(entry.speaker)) {
           try {
+            // Await each call to ensure sequential processing and ordering
             const { audioContent } = await generateSpeech({ text: entry.text, speaker: entry.speaker });
             newAudioItems.push({ speaker: entry.speaker, audioSrc: audioContent });
           } catch (err) {
@@ -87,10 +96,13 @@ export function VoiceSimulationClient({ project, onSaveState }: VoiceSimulationC
         setAudioQueue(prev => [...prev, ...newAudioItems]);
       }
       processedTranscriptIndex.current = state.transcript.length;
+      setIsGeneratingAudio(false);
     };
+    
     processTranscript();
   }, [state?.transcript, toast]);
 
+  // Play audio from the queue
   useEffect(() => {
     if (!isPlaying && audioQueue.length > 0) {
       const nextItem = audioQueue[0];
@@ -115,6 +127,7 @@ export function VoiceSimulationClient({ project, onSaveState }: VoiceSimulationC
     }
   };
 
+  // Submit transcript when listening stops
   useEffect(() => {
       if (!isListening && transcript) {
           const userActionType = state?.phase === 'OPENING_STATEMENTS' ? 'SUBMIT_STATEMENT'
@@ -126,7 +139,7 @@ export function VoiceSimulationClient({ project, onSaveState }: VoiceSimulationC
   }, [isListening, transcript]);
 
 
-  if (!state) {
+  if (!state && isTurnLoading) {
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center p-8 bg-background text-foreground">
         <Spinner size="lg" />
@@ -135,34 +148,49 @@ export function VoiceSimulationClient({ project, onSaveState }: VoiceSimulationC
       </div>
     );
   }
+  
+  if (!state) {
+     return <div className="flex h-screen items-center justify-center text-destructive">Simulation could not be loaded.</div>;
+  }
 
   const latestCoachingTip = state.transcript.slice().reverse().find(t => t.speaker === 'COACHING')?.text;
-  const canSpeak = state.isAwaitingUserInput && !isLoading && !isPlaying && audioQueue.length === 0;
+  const isProcessing = isTurnLoading || isGeneratingAudio;
+  const canSpeak = state.isAwaitingUserInput && !isProcessing && !isPlaying && audioQueue.length === 0;
+
+  const getFooterText = () => {
+    if (isTurnLoading) return "AI is responding...";
+    if (isGeneratingAudio) return "Generating audio...";
+    if (isPlaying) return "Listen to the hearing...";
+    if (isListening) return ""; // 'Listening...' is a separate element
+    if (canSpeak) return "Press the mic to speak";
+    if (state.isAwaitingUserInput && isProcessing) return "Preparing for your turn...";
+    return "Awaiting response from other parties...";
+  }
 
   return (
     <div className="flex h-screen w-full flex-col items-center justify-between p-8 bg-background text-foreground">
         <audio ref={audioRef} onEnded={() => setIsPlaying(false)} />
         
-        {/* Top Avatars */}
         <div className="flex justify-around w-full max-w-5xl">
             <AvatarDisplay speaker="OPPOSING_COUNSEL" isSpeaking={activeSpeaker === 'OPPOSING_COUNSEL'} />
             <AvatarDisplay speaker="TRIBUNAL" isSpeaking={activeSpeaker === 'TRIBUNAL'} />
-            <AvatarDisplay speaker="COACHING" isSpeaking={activeSpeaker === 'COACHING'} />
+            <AvatarDisplay speaker="WITNESS" isSpeaking={activeSpeaker === 'WITNESS'} className={!state.currentWitness ? 'opacity-30' : ''}/>
         </div>
 
-        {/* Center Content & User Avatar */}
         <div className="flex flex-col items-center gap-8">
             {latestCoachingTip && !isPlaying && (
                 <Card className="max-w-xl p-4 bg-purple-900/20 border border-purple-500/30 animate-fade-in">
                     <CardContent className="p-0">
-                        <p className="text-center text-purple-300">{latestCoachingTip}</p>
+                         <div className="flex items-center gap-4">
+                            <AvatarDisplay speaker="COACHING" isSpeaking={activeSpeaker === 'COACHING'} />
+                            <p className="text-center text-purple-300">{latestCoachingTip}</p>
+                         </div>
                     </CardContent>
                 </Card>
             )}
-            <AvatarDisplay speaker="USER" isSpeaking={isListening} />
+            <AvatarDisplay speaker="USER" isSpeaking={isListening} isListening={canSpeak && !isListening} />
         </div>
 
-        {/* Mic Button & Footer */}
         <div className="flex flex-col items-center gap-4">
             {isListening && (
                 <p className="text-lg text-primary animate-pulse">Listening...</p>
@@ -175,9 +203,7 @@ export function VoiceSimulationClient({ project, onSaveState }: VoiceSimulationC
                 {isListening ? <Square className="h-8 w-8" /> : <Mic className="h-10 w-10" />}
             </Button>
             <p className="text-sm text-muted-foreground h-4">
-                {isLoading && !isListening && "AI is responding..."}
-                {!canSpeak && !isLoading && isPlaying && "Listen to the hearing..."}
-                {canSpeak && "Press the mic to speak"}
+              {getFooterText()}
             </p>
         </div>
     </div>
