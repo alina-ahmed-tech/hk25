@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 
 const stages = [
-  { name: 'Advocate', model: 'Gemini', color: '210, 20%, 98%' }, // Foreground color (white)
-  { name: 'Adversary', model: 'Gemini', color: '210, 20%, 98%' },
-  { name: 'Arbiter', model: 'Gemini', color: '210, 20%, 98%' },
+  { name: 'Advocate', model: 'Gemini', color: '210, 40%, 96%' }, // primary color
+  { name: 'Adversary', model: 'Gemini', color: '210, 40%, 96%' },
+  { name: 'Arbiter', model: 'Gemini', color: '210, 40%, 96%' },
 ];
 
 export function ThinkingAnimation() {
@@ -34,16 +34,15 @@ export function ThinkingAnimation() {
         {stages.map((stage, index) => (
           <div key={stage.name} className="flex flex-col items-center text-center">
             <div
-              className="relative h-24 w-24 md:h-32 md:w-32 rounded-full border-2 transition-all duration-500 flex items-center justify-center"
+              className="relative h-24 w-24 md:h-32 md:w-32 rounded-full border-2 transition-all duration-500 flex items-center justify-center bg-card/30"
               style={{
                 borderColor: `rgba(${stage.color}, ${index <= activeStage ? '0.5' : '0.2'})`,
-                backgroundColor: `rgba(${stage.color}, ${index <= activeStage ? '0.1' : '0.05'})`,
                 '--glow-color': stage.color,
               } as React.CSSProperties}
             >
               <div
                 className={`h-full w-full rounded-full transition-all duration-500 ${
-                  index === activeStage ? 'animate-pulse-glow' : ''
+                  index === activeStage ? 'animate-pulse-border-glow' : 'animate-breathing'
                 }`}
               />
             </div>

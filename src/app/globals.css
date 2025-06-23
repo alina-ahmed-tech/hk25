@@ -4,34 +4,34 @@
 
 @layer base {
   :root {
-    /* Professional Grayscale Liquid Glass Theme */
-    --background: 220 9% 10%; /* very-dark-mostly-black-gray */
-    --foreground: 210 20% 98%; /* almost-white */
+    /* Professional Grayscale Liquid Glass Theme (Lighter) */
+    --background: 215 28% 17%; /* cool, dark slate blue/grey */
+    --foreground: 210 40% 98%; /* bright, clean off-white */
     
-    --card: 220 10% 15%; /* dark-gray */
-    --card-foreground: 210 20% 98%;
+    --card: 215 28% 22%; /* slightly lighter slate */
+    --card-foreground: 210 40% 98%;
 
-    --popover: 220 10% 10%;
-    --popover-foreground: 210 20% 98%;
+    --popover: 215 28% 17%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 210 20% 98%;
-    --primary-foreground: 220 9% 10%;
+    --primary: 210 40% 96%; /* off-white for primary actions */
+    --primary-foreground: 215 28% 15%; /* dark for on-primary buttons */
 
-    --secondary: 220 10% 20%;
-    --secondary-foreground: 210 20% 98%;
+    --secondary: 215 28% 28%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 220 10% 20%;
+    --muted: 215 28% 28%;
     --muted-foreground: 215 20% 65%;
 
-    --accent: 220 10% 25%;
-    --accent-foreground: 210 20% 98%;
+    --accent: 215 28% 35%;
+    --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 72% 51%; /* A more standard red for destructive actions */
-    --destructive-foreground: 210 20% 98%;
+    --destructive: 0 63% 31%; /* A more standard red for destructive actions */
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 210 20% 98% / 0.1; /* Transparent white for borders */
-    --input: 220 10% 15% / 0.7;
-    --ring: 210 20% 98%;
+    --border: 215 28% 30%;
+    --input: 215 28% 30%;
+    --ring: 210 40% 98%;
 
     --radius: 0.75rem;
   }
@@ -50,10 +50,10 @@
 @layer components {
   .bg-card {
     /* This applies the glass effect */
-    @apply bg-card/60 backdrop-blur-lg border border-white/10 shadow-2xl shadow-black/40;
+    @apply bg-card/60 backdrop-blur-lg border border-border/80 shadow-2xl shadow-black/40;
   }
   .bg-popover {
-     @apply bg-popover/80 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/20;
+     @apply bg-popover/80 backdrop-blur-xl border border-border/80 shadow-2xl shadow-black/20;
   }
   .bg-primary {
     @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 hover:scale-[1.02];
