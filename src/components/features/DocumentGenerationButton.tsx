@@ -1,10 +1,10 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/Spinner';
-import { FileDown, AlertTriangle, FileText, FileSignature } from 'lucide-react';
+import { FileDown, FileText, FileSignature } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { generateInternalMemo, generateClientReport } from '@/lib/actions';
 import { getAIErrorMessage } from '@/lib/utils';
@@ -48,6 +48,19 @@ export function DocumentGenerationButton({ projectName, analysis }: DocumentGene
   const { toast } = useToast();
   const [state, setState] = useState<ButtonState>('idle');
 
+  // This effect handles resetting the button after an error.
+  useEffect(() => {
+    if (state === 'error') {
+      const timer = setTimeout(() => {
+        setState('idle');
+      }, 3000); // Reset after 3 seconds
+
+      // Cleanup the timer if the component unmounts or state changes
+      return () => clearTimeout(timer);
+    }
+  }, [state]);
+
+
   const handleGenerateMemo = async () => {
     if (state !== 'idle') return;
     setState('memo-loading');
@@ -67,7 +80,6 @@ export function DocumentGenerationButton({ projectName, analysis }: DocumentGene
       console.error('Error generating internal memo:', err);
       toast({ title: 'Generation Failed', description: getAIErrorMessage(err), variant: 'destructive' });
       setState('error');
-      setTimeout(() => setState('idle'), 5000);
     }
   };
 
@@ -89,7 +101,6 @@ export function DocumentGenerationButton({ projectName, analysis }: DocumentGene
       console.error('Error generating client report:', err);
       toast({ title: 'Generation Failed', description: getAIErrorMessage(err), variant: 'destructive' });
       setState('error');
-      setTimeout(() => setState('idle'), 5000);
     }
   };
 
