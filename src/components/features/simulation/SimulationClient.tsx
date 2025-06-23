@@ -1,4 +1,3 @@
-// This file will be created.
 'use client';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Project } from '@/lib/types';

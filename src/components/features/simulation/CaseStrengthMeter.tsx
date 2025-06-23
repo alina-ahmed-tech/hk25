@@ -1,4 +1,3 @@
-// This file will be created.
 'use client';
 import { PolarAngleAxis, RadialBar, RadialBarChart, ResponsiveContainer } from 'recharts';
 

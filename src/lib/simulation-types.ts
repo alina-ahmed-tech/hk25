@@ -1,4 +1,3 @@
-// This file will be created.
 import { z } from 'zod';
 
 export const SimulationPhaseSchema = z.enum([
