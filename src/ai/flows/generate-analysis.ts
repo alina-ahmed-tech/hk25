@@ -16,13 +16,13 @@ import type { Analysis, GenerateAnalysisInput } from '@/lib/types';
 
 export type GenerateAnalysisOutput = { analysisDashboard: Analysis };
 
-export async function generateAnalysis(input: {legalStrategy: string}): Promise<GenerateAnalysisOutput> {
+export async function generateAnalysis(input: GenerateAnalysisInput): Promise<GenerateAnalysisOutput> {
   return generateAnalysisFlow(input);
 }
 
 const threePartAnalysisPrompt = ai.definePrompt({
   name: 'threePartAnalysisPrompt',
-  input: {schema: z.object({ legalStrategy: GenerateAnalysisInputSchema.shape.legalStrategy }) },
+  input: {schema: GenerateAnalysisInputSchema },
   output: {schema: ThreePartAnalysisSchema},
   prompt: `You are a world-class AI legal analyst. Your task is to provide a concise, multi-faceted analysis of a legal strategy.
 
@@ -52,7 +52,7 @@ const generateAnalysisFlow = ai.defineFlow(
   {
     name: 'generateAnalysisFlow',
     outputSchema: z.object({ analysisDashboard: AnalysisDashboardSchema }),
-    inputSchema: z.object({ legalStrategy: GenerateAnalysisInputSchema.shape.legalStrategy }),
+    inputSchema: GenerateAnalysisInputSchema,
   },
   async input => {
     // Step 1: Generate the high-level three-part analysis.

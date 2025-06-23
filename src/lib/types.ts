@@ -31,8 +31,8 @@ export const AdversarialPlaybookSchema = z.object({
 // For Main Analysis
 export const GenerateAnalysisInputSchema = z.object({
   legalStrategy: z.string().describe('The legal strategy to be analyzed, including case facts and initial arguments.'),
-  analysis: z.string().describe("A JSON string of the full, structured AI analysis from Firestore.")
 });
+export type GenerateAnalysisInput = z.infer<typeof GenerateAnalysisInputSchema>;
 
 export const CaseCitationSchema = z.object({
     citation: z.string().describe("The name of the cited case."),
