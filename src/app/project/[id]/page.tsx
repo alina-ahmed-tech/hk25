@@ -47,31 +47,66 @@ export default function ProjectPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchProjectData = useCallback(async () => {
+    if (!user || !projectId) {
+      setLoading(false);
+      return;
+    }
+
+    // Handle local-only projects from sessionStorage
+    if ((projectId as string).startsWith('local-')) {
       setLoading(true);
-      if (!user || !projectId || !db) {
-        setLoading(false);
-        if(!db) console.warn("Firebase not configured. Cannot fetch project.");
-        return;
-      }
-      
-      const projectDocRef = doc(db, 'users', user.uid, projectId as string);
-      try {
-        const docSnap = await getDoc(projectDocRef);
-        if (docSnap.exists()) {
-          const projectData = { id: docSnap.id, ...docSnap.data() } as Project;
+      const localDataKey = `pending-project-${projectId}`;
+      const localDataJSON = sessionStorage.getItem(localDataKey);
+      if (localDataJSON) {
+        try {
+          const projectData: Project = JSON.parse(localDataJSON);
+          projectData.createdAt = new Date(projectData.createdAt as any); // Rehydrate Date
           setProject(projectData);
           setProjectName(projectData.name);
           setPageState(projectData.analysis ? 'dashboard' : 'form');
-        } else {
+        } catch (error) {
+          console.error('Failed to parse local project data:', error);
+          toast({ title: 'Error', description: 'Could not load local project data.', variant: 'destructive' });
+          router.push('/dashboard');
+        }
+      } else {
+        toast({ title: 'Error', description: 'Local project data not found in session.', variant: 'destructive' });
+        router.push('/dashboard');
+      }
+      setLoading(false);
+      return;
+    }
+
+    // Handle Firestore projects
+    if (!db) {
+      console.warn("Firebase not configured for a non-local project. Redirecting.");
+      toast({ title: 'Error', description: 'Database not configured.', variant: 'destructive' });
+      router.push('/dashboard');
+      setLoading(false);
+      return;
+    }
+
+    const projectDocRef = doc(db, 'users', user.uid, projectId as string);
+    try {
+      const docSnap = await getDoc(projectDocRef);
+      if (docSnap.exists()) {
+        const projectData = { id: docSnap.id, ...docSnap.data() } as Project;
+        setProject(projectData);
+        setProjectName(projectData.name);
+        setPageState(projectData.analysis ? 'dashboard' : 'form');
+      } else {
+        // This case is handled by the polling logic in useEffect, which will retry.
+        // We only show an error if we are not in a polling state.
+        if (sessionStorage.getItem('pending-project-creation') !== projectId) {
           toast({ title: 'Error', description: 'Project not found.', variant: 'destructive' });
           router.push('/dashboard');
         }
-      } catch (error) {
-        console.error("Error fetching project:", error);
-        toast({ title: 'Error', description: 'Failed to fetch project data.', variant: 'destructive' });
       }
-      setLoading(false);
-    }, [user, projectId, toast, router]);
+    } catch (error) {
+      console.error("Error fetching project:", error);
+      toast({ title: 'Error', description: 'Failed to fetch project data.', variant: 'destructive' });
+    }
+  }, [user, projectId, toast, router]);
 
 
   useEffect(() => {
@@ -99,13 +134,17 @@ export default function ProjectPage() {
         // After the project is loaded and has analysis, clear interval
         if (project?.analysis) {
             cleanup();
+            setLoading(false);
         }
 
         // Failsafe timeout
         const timeoutId = setTimeout(() => {
-            toast({ title: "Timeout", description: "Project creation took too long.", variant: "destructive"});
-            cleanup();
-            setLoading(false);
+            if (!project) { // Check if project is still not loaded
+                toast({ title: "Timeout", description: "Project creation took too long.", variant: "destructive"});
+                cleanup();
+                setLoading(false);
+                router.push('/dashboard');
+            }
         }, 60000);
 
         return () => {
@@ -113,9 +152,10 @@ export default function ProjectPage() {
             clearTimeout(timeoutId);
         };
     } else {
-        fetchProjectData();
+        setLoading(true);
+        fetchProjectData().finally(() => setLoading(false));
     }
-  }, [projectId, isNewProject, fetchProjectData, project?.analysis, toast]);
+  }, [projectId, isNewProject, fetchProjectData, project, router, toast]);
   
   // Effect to trigger background deep dive generation
   useEffect(() => {
