@@ -32,7 +32,7 @@ Analysis Data:
 });
 
 const generateHtml = (content: ClientReport, projectName: string, caseStrength: number): string => {
-  const risksAndOpportunitiesHtml = content.identified_risks_and_opportunities
+  const risksAndOpportunitiesHtml = (content.identified_risks_and_opportunities || [])
     .map(item => `<li>${item}</li>`)
     .join('');
 
@@ -160,9 +160,14 @@ const generateClientReportFlow = ai.defineFlow(
       throw new Error('AI failed to generate valid report content.');
     }
     
-    // Step 2: Extract case strength for visualization.
-    const parsedAnalysis = JSON.parse(analysis);
-    const caseStrength = parsedAnalysis?.arbiterSynthesis?.predictiveAnalysis?.confidenceLevel * 100 || 50;
+    // Step 2: Extract case strength for visualization, with robust parsing.
+    let caseStrength = 50;
+    try {
+        const parsedAnalysis = JSON.parse(analysis);
+        caseStrength = parsedAnalysis?.arbiterSynthesis?.predictiveAnalysis?.confidenceLevel * 100 || 50;
+    } catch (error) {
+        console.error("Failed to parse analysis for PDF generation. Using default case strength.", error);
+    }
 
     // Step 3: Generate HTML.
     const html = generateHtml(reportContent, projectName, Math.round(caseStrength));
