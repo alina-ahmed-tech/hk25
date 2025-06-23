@@ -62,7 +62,6 @@ const runSimulationFlow = ai.defineFlow(
           """
           
           Your Opening Statement:`,
-          output: { format: 'text' },
       });
       
       if (!opponentOpening) throw new Error("AI failed to generate opponent's opening statement.");
@@ -110,7 +109,6 @@ const runSimulationFlow = ai.defineFlow(
                 'Kronos Counsel: [Question]'
                 'Dr. Thorne (Simulated): [Answer]'
               `,
-              output: { format: 'text' },
           });
           
           if (!directExam) throw new Error("AI failed to simulate direct examination.");
@@ -173,7 +171,6 @@ const runSimulationFlow = ai.defineFlow(
                 """
                 ${newState.transcript.map(t => `${t.speaker}: ${t.text}`).join('\n')}
                 """`,
-                 output: { format: 'text' },
             });
 
             if (!opponentClosing) throw new Error("AI failed to generate opponent's closing argument.");
