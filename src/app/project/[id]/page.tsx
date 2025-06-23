@@ -17,10 +17,10 @@ import { ActionChecklist } from '@/components/features/ActionChecklist';
 import { ChatWindow } from '@/components/features/ChatWindow';
 import { ScopedChatDialog } from '@/components/features/ScopedChatDialog';
 import { ActionPlanDraftDialog } from '@/components/features/ActionPlanDraftDialog';
-import { GenerateDeckButton } from '@/components/features/GenerateDeckButton';
+import { DocumentGenerationButton } from '@/components/features/DocumentGenerationButton';
 import { generateAnalysis, generateActionPlan, generateProjectName, generateAllDeepDives } from '@/lib/actions';
 import { getAIErrorMessage } from '@/lib/utils';
-import { MessageSquare, ListTodo, Pencil, Rocket, ChevronRight, Presentation } from 'lucide-react';
+import { MessageSquare, ListTodo, Pencil, Rocket, ChevronRight, FileDown } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 type PageState = 'form' | 'thinking' | 'dashboard';
@@ -44,6 +44,7 @@ export default function ProjectPage() {
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [projectName, setProjectName] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchProjectData = useCallback(async () => {
       setLoading(true);
@@ -81,18 +82,40 @@ export default function ProjectPage() {
       return;
     }
 
-    if (sessionStorage.getItem(`pending-project-${projectId}`)) {
-      const parsedProject = JSON.parse(sessionStorage.getItem(`pending-project-${projectId}`)!);
-      sessionStorage.removeItem(`pending-project-${projectId}`);
-      setProject(parsedProject);
-      setProjectName(parsedProject.name);
-      setPageState('dashboard');
-      setLoading(false);
-      return;
+    const pendingProjectId = `pending-project-creation`;
+    if (sessionStorage.getItem(pendingProjectId) === projectId) {
+        setLoading(true);
+        const checkInterval = setInterval(async () => {
+            await fetchProjectData();
+            // This assumes fetchProjectData sets the project state
+        }, 2000);
+        
+        // Cleanup logic
+        const cleanup = () => {
+            clearInterval(checkInterval);
+            sessionStorage.removeItem(pendingProjectId);
+        }
+
+        // After the project is loaded and has analysis, clear interval
+        if (project?.analysis) {
+            cleanup();
+        }
+
+        // Failsafe timeout
+        const timeoutId = setTimeout(() => {
+            toast({ title: "Timeout", description: "Project creation took too long.", variant: "destructive"});
+            cleanup();
+            setLoading(false);
+        }, 60000);
+
+        return () => {
+            cleanup();
+            clearTimeout(timeoutId);
+        };
+    } else {
+        fetchProjectData();
     }
-    
-    fetchProjectData();
-  }, [projectId, isNewProject, fetchProjectData]);
+  }, [projectId, isNewProject, fetchProjectData, project?.analysis, toast]);
   
   // Effect to trigger background deep dive generation
   useEffect(() => {
@@ -138,6 +161,7 @@ export default function ProjectPage() {
 
   const handleStrategySubmit = async (strategy: string) => {
     if (!user) return;
+    setIsSubmitting(true);
     setPageState('thinking');
   
     try {
@@ -162,6 +186,7 @@ export default function ProjectPage() {
         const serializableProject = { ...newProjectData, createdAt: newProjectData.createdAt.toISOString() };
         sessionStorage.setItem(`pending-project-${newProjectData.id}`, JSON.stringify(serializableProject));
         router.push(`/project/${newProjectData.id}`);
+        setIsSubmitting(false);
         return;
       }
       
@@ -178,12 +203,14 @@ export default function ProjectPage() {
       const newDocRef = await addDoc(projectCollectionRef, projectWithTimestamp);
       
       toast({ title: 'Success', description: 'Analysis generated. Creating project...' });
+      sessionStorage.setItem('pending-project-creation', newDocRef.id);
       router.push(`/project/${newDocRef.id}`);
 
     } catch (error) {
       console.error("Error creating project and analysis:", error);
       toast({ title: 'Error', description: getAIErrorMessage(error), variant: 'destructive' });
       setPageState('form'); 
+      setIsSubmitting(false);
     }
   };
   
@@ -280,7 +307,7 @@ export default function ProjectPage() {
   const renderContent = () => {
     switch (pageState) {
       case 'form':
-        return <StrategyForm onSubmit={handleStrategySubmit} />;
+        return <StrategyForm onSubmit={handleStrategySubmit} isLoading={isSubmitting} />;
       case 'thinking':
         return <ThinkingAnimation />;
       case 'dashboard':
@@ -334,12 +361,12 @@ export default function ProjectPage() {
                     </div>
 
                     <div className="flex flex-col items-center text-center p-6 bg-card rounded-lg border border-border hover:border-primary/50 transition-colors">
-                        <Presentation className="h-10 w-10 text-primary mb-4" />
-                        <h3 className="font-semibold text-lg mb-2 text-foreground">Generate Strategy Deck</h3>
+                        <FileDown className="h-10 w-10 text-primary mb-4" />
+                        <h3 className="font-semibold text-lg mb-2 text-foreground">Generate Documents</h3>
                         <p className="text-sm text-muted-foreground mb-4">
-                            Automatically create a downloadable Word document from the complete case analysis.
+                           Create professional DOCX or PDF reports from the complete case analysis.
                         </p>
-                         <GenerateDeckButton 
+                         <DocumentGenerationButton
                             projectName={project.name}
                             analysis={project.analysis}
                          />

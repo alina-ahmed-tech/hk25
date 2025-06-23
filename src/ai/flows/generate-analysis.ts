@@ -12,18 +12,17 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import {generateAdversarialPlaybook} from './generate-adversarial-playbook';
 import { ThreePartAnalysisSchema, AnalysisDashboardSchema, GenerateAnalysisInputSchema } from '@/lib/types';
-import type { Analysis } from '@/lib/types';
+import type { Analysis, GenerateAnalysisInput } from '@/lib/types';
 
-export type GenerateAnalysisInput = z.infer<typeof GenerateAnalysisInputSchema>;
 export type GenerateAnalysisOutput = { analysisDashboard: Analysis };
 
-export async function generateAnalysis(input: GenerateAnalysisInput): Promise<GenerateAnalysisOutput> {
+export async function generateAnalysis(input: {legalStrategy: string}): Promise<GenerateAnalysisOutput> {
   return generateAnalysisFlow(input);
 }
 
 const threePartAnalysisPrompt = ai.definePrompt({
   name: 'threePartAnalysisPrompt',
-  input: {schema: GenerateAnalysisInputSchema},
+  input: {schema: z.object({ legalStrategy: GenerateAnalysisInputSchema.shape.legalStrategy }) },
   output: {schema: ThreePartAnalysisSchema},
   prompt: `You are a world-class AI legal analyst. Your task is to provide a concise, multi-faceted analysis of a legal strategy.
 
@@ -53,7 +52,7 @@ const generateAnalysisFlow = ai.defineFlow(
   {
     name: 'generateAnalysisFlow',
     outputSchema: z.object({ analysisDashboard: AnalysisDashboardSchema }),
-    inputSchema: GenerateAnalysisInputSchema,
+    inputSchema: z.object({ legalStrategy: GenerateAnalysisInputSchema.shape.legalStrategy }),
   },
   async input => {
     // Step 1: Generate the high-level three-part analysis.

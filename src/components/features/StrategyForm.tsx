@@ -14,12 +14,12 @@ import { useToast } from '@/hooks/use-toast';
 
 type StrategyFormProps = {
   onSubmit: (strategy: string) => void;
+  isLoading: boolean;
 };
 
-export function StrategyForm({ onSubmit }: StrategyFormProps) {
+export function StrategyForm({ onSubmit, isLoading }: StrategyFormProps) {
   const { toast } = useToast();
   const [strategy, setStrategy] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [suggestedPrompt, setSuggestedPrompt] = useState<string | null>(null);
   
@@ -48,7 +48,6 @@ export function StrategyForm({ onSubmit }: StrategyFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (strategy.trim()) {
-      setIsSubmitting(true);
       onSubmit(strategy.trim());
     }
   };
@@ -61,7 +60,7 @@ export function StrategyForm({ onSubmit }: StrategyFormProps) {
     }
   }
 
-  const isLoading = isSubmitting || isOptimizing;
+  const isButtonDisabled = isLoading || isOptimizing || !strategy.trim();
 
   return (
     <Card className="w-full max-w-4xl mx-auto bg-transparent border-0 shadow-none animate-fade-in">
@@ -78,7 +77,7 @@ export function StrategyForm({ onSubmit }: StrategyFormProps) {
             className="min-h-[300px] text-base bg-slate-900/60 backdrop-blur-sm focus-visible:ring-1 border-slate-800"
             value={strategy}
             onChange={(e) => setStrategy(e.target.value)}
-            disabled={isSubmitting}
+            disabled={isLoading}
           />
 
           {suggestedPrompt && (
@@ -92,8 +91,8 @@ export function StrategyForm({ onSubmit }: StrategyFormProps) {
           )}
 
           <div className="flex justify-center items-center gap-4">
-            <Button type="submit" disabled={isLoading || !strategy.trim()} size="lg">
-              {isSubmitting ? (
+            <Button type="submit" disabled={isButtonDisabled} size="lg">
+              {isLoading ? (
                 <>
                   <Spinner className="mr-2" />
                   Analyzing...

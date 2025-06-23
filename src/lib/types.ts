@@ -31,6 +31,7 @@ export const AdversarialPlaybookSchema = z.object({
 // For Main Analysis
 export const GenerateAnalysisInputSchema = z.object({
   legalStrategy: z.string().describe('The legal strategy to be analyzed, including case facts and initial arguments.'),
+  analysis: z.string().describe("A JSON string of the full, structured AI analysis from Firestore.")
 });
 
 export const CaseCitationSchema = z.object({
@@ -94,32 +95,51 @@ export const GenerateAllDeepDivesOutputSchema = z.object({
 });
 export type GenerateAllDeepDivesOutput = z.infer<typeof GenerateAllDeepDivesOutputSchema>;
 
-// For Presentation Generation
-export const SlideSchema = z.object({
-  title: z.string(),
-  subtitle: z.string().optional(),
-  bullets: z.array(z.string()).optional(),
-  speakerNotes: z.string().optional(),
-});
-export type Slide = z.infer<typeof SlideSchema>;
-
-export const PresentationContentSchema = z.object({
-  title: z.string().describe('The main title for the entire presentation.'),
-  slides: z.array(SlideSchema).describe('An array of slide objects.'),
-});
-export type PresentationContent = z.infer<typeof PresentationContentSchema>;
-
-export const GeneratePresentationInputSchema = z.object({
-  analysis: z.string().describe('A JSON string representation of the complete analysis object.'),
+// For Document Generation
+export const DocumentGenerationInputSchema = z.object({
+  analysis: z.string().describe("A JSON string of the full, structured AI analysis from Firestore."),
   projectName: z.string(),
 });
-export type GeneratePresentationInput = z.infer<typeof GeneratePresentationInputSchema>;
+export type DocumentGenerationInput = z.infer<typeof DocumentGenerationInputSchema>;
 
-export const GeneratePresentationOutputSchema = z.object({
+export const DocumentGenerationOutputSchema = z.object({
   fileName: z.string(),
-  fileContent: z.string().describe('Base64 encoded file content.'),
+  fileContent: z.string().describe("Base64 encoded file content."),
 });
-export type GeneratePresentationOutput = z.infer<typeof GeneratePresentationOutputSchema>;
+export type DocumentGenerationOutput = z.infer<typeof DocumentGenerationOutputSchema>;
+
+export const InternalMemoSchema = z.object({
+    executive_summary: z.string(),
+    risk_analysis: z.array(z.object({
+        risk_title: z.string(),
+        description: z.string(),
+        vulnerability_score: z.number(),
+    })),
+    strategic_recommendations: z.array(z.object({
+        pillar_title: z.string(),
+        detailed_rationale: z.string(),
+    })),
+    action_plan: z.array(z.object({
+        category: z.string(),
+        task_description: z.string(),
+    })),
+    research_log: z.array(z.object({
+        case_name: z.string(),
+        case_summary: z.string(),
+        source_quote: z.string(),
+        ai_reasoning: z.string(),
+    })),
+});
+export type InternalMemo = z.infer<typeof InternalMemoSchema>;
+
+export const ClientReportSchema = z.object({
+    report_title: z.string(),
+    executive_takeaway: z.string(),
+    current_situation: z.string(),
+    identified_risks_and_opportunities: z.array(z.string()),
+    our_recommended_path_forward: z.string(),
+});
+export type ClientReport = z.infer<typeof ClientReportSchema>;
 
 
 // Main Project Type
