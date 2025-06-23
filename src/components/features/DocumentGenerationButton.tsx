@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/Spinner';
 import { FileDown, FileText, FileSignature } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { generateInternalMemo, generateClientReport } from '@/lib/actions';
+import { generateInternalMemo, generateClientReport } from '@/lib/doc-actions';
 import { getAIErrorMessage } from '@/lib/utils';
 import type { Analysis } from '@/lib/types';
 import { saveAs } from 'file-saver';

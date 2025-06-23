@@ -1,7 +1,7 @@
 'use server';
 
 import { generateAnalysis as genAnalysisFlow } from '@/ai/flows/generate-analysis';
-import type { GenerateAnalysisInput } from '@/ai/flows/generate-analysis';
+import type { GenerateAnalysisInput, GenerateAnalysisOutput } from '@/ai/flows/generate-analysis';
 import { generateActionPlan as genActionPlanFlow } from '@/ai/flows/generate-action-plan';
 import type { GenerateActionPlanInput, GenerateActionPlanOutput } from '@/ai/flows/generate-action-plan';
 import { generateLegalSummary as genLegalSummaryFlow } from '@/ai/flows/generate-legal-summarization';
@@ -22,16 +22,13 @@ import { generateDeepDive as generateDeepDiveFlow } from '@/ai/flows/generate-de
 import type { GenerateDeepDiveInput, GenerateDeepDiveOutput } from '@/ai/flows/generate-deep-dive';
 import { generateAllDeepDives as generateAllDeepDivesFlow } from '@/ai/flows/generate-all-deep-dives';
 import type { GenerateAllDeepDivesInput, GenerateAllDeepDivesOutput } from '@/ai/flows/generate-all-deep-dives';
-import { generateInternalMemo as generateInternalMemoFlow } from '@/ai/flows/generate-internal-memo';
-import { generateClientReport as generateClientReportFlow } from '@/ai/flows/generate-client-report';
-import type { DocumentGenerationInput, DocumentGenerationOutput } from '@/lib/types';
 import { generateSpeech as generateSpeechFlow } from '@/ai/flows/generate-speech';
 import type { GenerateSpeechInput, GenerateSpeechOutput } from '@/ai/flows/generate-speech';
 
 
 export async function generateAnalysis(
   input: GenerateAnalysisInput
-): Promise<any> {
+): Promise<GenerateAnalysisOutput> {
   return await genAnalysisFlow(input);
 }
 
@@ -93,18 +90,6 @@ export async function generateDeepDive(
   input: GenerateDeepDiveInput
 ): Promise<GenerateDeepDiveOutput> {
   return await generateDeepDiveFlow(input);
-}
-
-export async function generateInternalMemo(
-    input: DocumentGenerationInput
-): Promise<DocumentGenerationOutput> {
-    return await generateInternalMemoFlow(input);
-}
-
-export async function generateClientReport(
-    input: DocumentGenerationInput
-): Promise<DocumentGenerationOutput> {
-    return await generateClientReportFlow(input);
 }
 
 export async function generateSpeech(
