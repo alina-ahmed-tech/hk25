@@ -3,23 +3,17 @@
 /**
  * @fileOverview A Genkit flow to generate a polished, client-facing PDF report.
  * This version uses JSPDF for robust, programmatic PDF creation, avoiding heavy
- * dependencies like Puppeteer.
+ * dependencies like Puppeteer and problematic plugins.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable'; // Ensure the plugin is imported
 import {
   DocumentGenerationInputSchema,
   DocumentGenerationOutputSchema,
 } from '@/lib/types';
 import type { DocumentGenerationInput, DocumentGenerationOutput } from '@/lib/types';
-
-// Extend jsPDF with the autoTable plugin
-interface jsPDFWithAutoTable extends jsPDF {
-  autoTable: (options: any) => jsPDF;
-}
 
 // Define a schema for the structured text content the AI will generate
 const ClientReportContentSchema = z.object({
@@ -74,45 +68,48 @@ const generateClientReportFlow = ai.defineFlow(
     }
 
     // Step 2: Programmatically create the PDF using jsPDF.
-    const doc = new jsPDF() as jsPDFWithAutoTable;
+    const doc = new jsPDF();
     const pageHeight = doc.internal.pageSize.height || doc.internal.pageSize.getHeight();
     const pageWidth = doc.internal.pageSize.width || doc.internal.pageSize.getWidth();
     let currentY = 20;
+    const margin = 20;
+    const cellPadding = 3;
+    const tableColWidths = [30, pageWidth - 40 - 30];
 
     // --- Helper Functions ---
     const addHeader = () => {
         doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
-        doc.text('Client Update', 20, currentY);
+        doc.text('Client Update', margin, currentY);
         doc.setFont('helvetica', 'normal');
-        doc.text(new Date().toLocaleDateString(), pageWidth - 20, currentY, { align: 'right' });
+        doc.text(new Date().toLocaleDateString(), pageWidth - margin, currentY, { align: 'right' });
         currentY += 5;
         doc.setDrawColor(200);
-        doc.line(20, currentY, pageWidth - 20, currentY);
+        doc.line(margin, currentY, pageWidth - margin, currentY);
         currentY += 15;
     };
 
     const addFooter = () => {
-        const pageCount = doc.internal.pages.length;
+        const pageCount = (doc.internal as any).pages.length;
         for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
             doc.setFontSize(8);
             doc.setTextColor(150);
-            doc.text(`CONFIDENTIAL & PRIVILEGED | Tribunal Genesis`, 20, pageHeight - 10);
-            doc.text(`Page ${i} of ${pageCount}`, pageWidth - 20, pageHeight - 10, { align: 'right' });
+            doc.text(`CONFIDENTIAL & PRIVILEGED | Tribunal Genesis`, margin, pageHeight - 10);
+            doc.text(`Page ${i} of ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
         }
     };
     
     const addSectionTitle = (title: string) => {
         if (currentY > pageHeight - 40) {
             doc.addPage();
-            currentY = 20;
+            currentY = margin;
             addHeader();
         }
         doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(70, 80, 90); // Slate Gray
-        doc.text(title, 20, currentY);
+        doc.text(title, margin, currentY);
         currentY += 8;
     }
 
@@ -120,9 +117,46 @@ const generateClientReportFlow = ai.defineFlow(
         doc.setFontSize(11);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(50);
-        const splitText = doc.splitTextToSize(text, pageWidth - 40);
-        doc.text(splitText, 20, currentY);
+        const splitText = doc.splitTextToSize(text, pageWidth - (margin * 2));
+        doc.text(splitText, margin, currentY);
         currentY += (splitText.length * 5) + 8;
+    }
+
+    const drawTable = (headers: string[], data: string[][]) => {
+      // Draw Header
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setFillColor(70, 80, 90);
+      doc.setTextColor(255);
+      doc.rect(margin, currentY, tableColWidths[0] + tableColWidths[1], 10, 'F');
+      doc.text(headers[0], margin + cellPadding, currentY + 7);
+      doc.text(headers[1], margin + tableColWidths[0] + cellPadding, currentY + 7);
+      currentY += 10;
+      doc.setTextColor(50);
+
+      // Draw Rows
+      data.forEach(row => {
+          doc.setFont('helvetica', 'normal');
+          const typeText = doc.splitTextToSize(row[0], tableColWidths[0] - (cellPadding * 2));
+          const descText = doc.splitTextToSize(row[1], tableColWidths[1] - (cellPadding * 2));
+          const rowHeight = Math.max(typeText.length, descText.length) * 5 + (cellPadding * 2);
+
+          if (currentY + rowHeight > pageHeight - margin) {
+              doc.addPage();
+              currentY = margin;
+          }
+          
+          doc.setDrawColor(200);
+          doc.line(margin, currentY, pageWidth - margin, currentY); // Top border
+          
+          doc.text(typeText, margin + cellPadding, currentY + cellPadding + 3);
+          doc.text(descText, margin + tableColWidths[0] + cellPadding, currentY + cellPadding + 3);
+          
+          currentY += rowHeight;
+      });
+      doc.setDrawColor(200);
+      doc.line(margin, currentY, pageWidth - margin, currentY); // Bottom border of last row
+      currentY += 10;
     }
     
     // --- Build PDF Document ---
@@ -137,7 +171,7 @@ const generateClientReportFlow = ai.defineFlow(
     
     // Executive Takeaway
     doc.setFillColor(240, 240, 240);
-    doc.rect(20, currentY, pageWidth - 40, 18, 'F');
+    doc.rect(margin, currentY, pageWidth - (margin*2), 18, 'F');
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bolditalic');
     doc.setTextColor(80);
@@ -151,17 +185,8 @@ const generateClientReportFlow = ai.defineFlow(
     // Risks & Opportunities Table
     addSectionTitle('Risks & Opportunities');
     const tableData = (reportContent.risks_and_opportunities || []).map(item => [item.type, item.description]);
-    doc.autoTable({
-        startY: currentY,
-        head: [['Type', 'Description']],
-        body: tableData,
-        theme: 'grid',
-        headStyles: { fillColor: [70, 80, 90] },
-        didDrawPage: (data) => {
-            currentY = data.cursor?.y ? data.cursor.y + 10 : currentY;
-        }
-    });
-
+    drawTable(['Type', 'Description'], tableData);
+    
     // Recommended Path
     addSectionTitle('Our Recommended Path Forward');
     addBodyText(reportContent.our_recommended_path_forward);
