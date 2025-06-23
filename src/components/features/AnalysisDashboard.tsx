@@ -61,9 +61,9 @@ export function AnalysisDashboard({ analysis, isGeneratingDetails }: AnalysisDas
             <AccordionTrigger className="p-6 hover:no-underline">
               <div className="flex items-center gap-4">
                 <div className="p-2 bg-secondary rounded-lg">
-                  <Scale className="h-6 w-6 text-primary" />
+                  <Scale className="h-6 w-6 text-sky-400" />
                 </div>
-                <h2 className="font-headline text-2xl text-primary">Advocate's Brief</h2>
+                <h2 className="font-headline text-2xl text-sky-400">Advocate's Brief</h2>
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-6 pb-6">
@@ -99,9 +99,9 @@ export function AnalysisDashboard({ analysis, isGeneratingDetails }: AnalysisDas
             <AccordionTrigger className="p-6 hover:no-underline">
                 <div className="flex items-center gap-4">
                   <div className="p-2 bg-secondary rounded-lg">
-                    <ThumbsDown className="h-6 w-6 text-destructive" />
+                    <ThumbsDown className="h-6 w-6 text-red-400" />
                   </div>
-                  <h2 className="font-headline text-2xl text-destructive">Identified Weaknesses</h2>
+                  <h2 className="font-headline text-2xl text-red-400">Identified Weaknesses</h2>
                 </div>
             </AccordionTrigger>
             <AccordionContent className="px-6 pb-6">
@@ -132,15 +132,15 @@ export function AnalysisDashboard({ analysis, isGeneratingDetails }: AnalysisDas
               <AccordionTrigger className="p-6 hover:no-underline">
                 <div className="flex items-center gap-4">
                     <div className="p-2 bg-secondary rounded-lg">
-                      <Lightbulb className="h-6 w-6 text-primary" />
+                      <Lightbulb className="h-6 w-6 text-amber-400" />
                     </div>
-                    <h2 className="font-headline text-2xl text-primary">Arbiter's Synthesis</h2>
+                    <h2 className="font-headline text-2xl text-amber-400">Arbiter's Synthesis</h2>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="px-6 pb-6">
                 <div className="space-y-6">
                   <div>
-                    <h4 className="font-semibold mb-2 flex items-center gap-2 text-primary"><Lightbulb className="h-5 w-5"/>Key Vulnerabilities</h4>
+                    <h4 className="font-semibold mb-2 flex items-center gap-2 text-amber-400"><Lightbulb className="h-5 w-5"/>Key Vulnerabilities</h4>
                     <ul className="list-disc list-inside space-y-2 text-sm text-foreground">
                       {(analysis.arbiterSynthesis?.keyVulnerabilities || []).map((item, index) => (
                         <li key={index}>{item.vulnerability}{item.affectedArguments && item.affectedArguments.length > 0 && (<p className="text-xs text-muted-foreground pl-2"> (Affects: {item.affectedArguments.join(', ')})</p>)}</li>
@@ -148,7 +148,7 @@ export function AnalysisDashboard({ analysis, isGeneratingDetails }: AnalysisDas
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-2 flex items-center gap-2 text-primary"><TrendingUp className="h-5 w-5"/>Refined Strategy</h4>
+                    <h4 className="font-semibold mb-2 flex items-center gap-2 text-amber-400"><TrendingUp className="h-5 w-5"/>Refined Strategy</h4>
                     <ul className="list-disc list-inside space-y-1 text-sm text-foreground">
                       {(analysis.arbiterSynthesis?.refinedStrategy || []).map((item, index) => (
                         <li key={index}>{item.recommendation} - <span className="text-muted-foreground">{item.rationale}</span></li>
@@ -157,7 +157,7 @@ export function AnalysisDashboard({ analysis, isGeneratingDetails }: AnalysisDas
                   </div>
                   {analysis.arbiterSynthesis?.predictiveAnalysis && (
                   <div>
-                    <h4 className="font-semibold mb-2 flex items-center gap-2 text-primary"><TrendingUp className="h-5 w-5"/>Predictive Analysis</h4>
+                    <h4 className="font-semibold mb-2 flex items-center gap-2 text-amber-400"><TrendingUp className="h-5 w-5"/>Predictive Analysis</h4>
                     <div className="flex items-center justify-between p-3 bg-background/50 rounded-lg border border-border/50">
                         <span className="text-foreground">Case Outcome Prediction</span>
                         <Popover><PopoverTrigger asChild>
@@ -184,15 +184,15 @@ export function AnalysisDashboard({ analysis, isGeneratingDetails }: AnalysisDas
             <AccordionTrigger className="p-6 hover:no-underline">
               <div className="flex items-center gap-4">
                   <div className="p-2 bg-secondary rounded-lg">
-                    <ShieldQuestion className="h-6 w-6 text-primary" />
+                    <ShieldQuestion className="h-6 w-6 text-violet-400" />
                   </div>
-                  <h2 className="font-headline text-2xl text-primary">Adversarial Playbook</h2>
+                  <h2 className="font-headline text-2xl text-violet-400">Adversarial Playbook</h2>
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-6 pb-6">
                 <div className="space-y-4">
                   <div>
-                    <h4 className="font-semibold text-primary mb-2">Opponent Counsel Analysis</h4>
+                    <h4 className="font-semibold text-violet-400 mb-2">Opponent Counsel Analysis</h4>
                     <p className="text-sm text-foreground">{analysis.adversarialPlaybook?.opponentCounselAnalysis}</p>
                   </div>
                   <Accordion type="multiple" className="w-full -mx-2">
