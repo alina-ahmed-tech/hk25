@@ -58,4 +58,34 @@
   .bg-primary {
     @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 hover:scale-[1.02];
   }
+
+  /* New animation for thinking screen */
+  .shining-outline {
+    position: relative;
+    z-index: 0;
+    overflow: hidden; /* Keep glow contained */
+    box-shadow: 0 0 20px 5px hsla(var(--primary), 0.3);
+  }
+  .shining-outline::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+      from 180deg at 50% 50%,
+      hsla(var(--primary), 0) 0%,
+      hsla(var(--primary), 0.8) 10%,
+      hsla(var(--primary), 0) 25%
+    );
+    animation: spin 1.5s linear infinite;
+  }
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
 }

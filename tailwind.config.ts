@@ -92,16 +92,6 @@ export default {
           from: { opacity: '0', transform: 'translateY(10px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
         },
-        'pulse-border-glow': {
-          '0%, 100%': {
-            transform: 'scale(1)',
-            boxShadow: '0 0 0 0 rgba(var(--glow-color), 0.7), inset 0 0 0 0 rgba(var(--glow-color), 0.7)',
-          },
-          '50%': {
-            transform: 'scale(1.05)',
-            boxShadow: '0 0 40px 10px rgba(var(--glow-color), 0.3), inset 0 0 10px 5px rgba(var(--glow-color), 0.2)',
-          },
-        },
         'breathing': {
           '0%, 100%': { transform: 'scale(1)', opacity: '0.8' },
           '50%': { transform: 'scale(1.02)', opacity: '1' },
@@ -124,7 +114,6 @@ export default {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in': 'fade-in 0.5s ease-out forwards',
-        'pulse-border-glow': 'pulse-border-glow 2.5s infinite ease-in-out',
         'breathing': 'breathing 4s infinite ease-in-out',
         'liquid-flow': 'liquid-flow 15s ease infinite',
         'morph': 'morph 8s ease-in-out infinite',

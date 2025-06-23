@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
 
 const stages = [
-  { name: 'Advocate', model: 'Gemini', color: '210, 40%, 96%' }, // primary color
-  { name: 'Adversary', model: 'Gemini', color: '210, 40%, 96%' },
-  { name: 'Arbiter', model: 'Gemini', color: '210, 40%, 96%' },
+  { name: 'Advocate', model: 'Gemini' },
+  { name: 'Adversary', model: 'Gemini' },
+  { name: 'Arbiter', model: 'Gemini' },
 ];
 
 export function ThinkingAnimation() {
@@ -15,12 +16,12 @@ export function ThinkingAnimation() {
     const timers = stages.map((_, index) => 
       setTimeout(() => {
         setActiveStage(index);
-      }, index * 2500)
+      }, index * 2000)
     );
 
     const finalTimer = setTimeout(() => {
         setActiveStage(stages.length);
-    }, stages.length * 2500)
+    }, stages.length * 2000);
 
     return () => {
         timers.forEach(clearTimeout);
@@ -31,27 +32,36 @@ export function ThinkingAnimation() {
   return (
     <div className="flex flex-col items-center justify-center h-[50vh] animate-fade-in">
       <div className="flex items-center justify-center space-x-8 md:space-x-16">
-        {stages.map((stage, index) => (
-          <div key={stage.name} className="flex flex-col items-center text-center">
-            <div
-              className="relative h-24 w-24 md:h-32 md:w-32 rounded-full border-2 transition-all duration-500 flex items-center justify-center bg-card/30"
-              style={{
-                borderColor: `rgba(${stage.color}, ${index <= activeStage ? '0.5' : '0.2'})`,
-                '--glow-color': stage.color,
-              } as React.CSSProperties}
-            >
+        {stages.map((stage, index) => {
+          const isActive = index === activeStage;
+          const isDone = index < activeStage;
+
+          return (
+            <div key={stage.name} className="flex flex-col items-center text-center">
               <div
-                className={`h-full w-full rounded-full transition-all duration-500 ${
-                  index === activeStage ? 'animate-pulse-border-glow' : 'animate-breathing'
-                }`}
-              />
+                className={cn(
+                  "relative h-24 w-24 md:h-32 md:w-32 rounded-full border-2 transition-all duration-500 flex items-center justify-center bg-card/30",
+                  isActive && 'shining-outline'
+                )}
+                style={{
+                  borderColor: isActive ? 'transparent' : `hsla(var(--primary), ${isDone ? '0.5' : '0.2'})`,
+                }}
+              >
+                <div
+                  className={cn(
+                    'h-full w-full rounded-full transition-all duration-500',
+                    !isDone && !isActive && 'animate-breathing opacity-80',
+                    isDone && 'bg-primary/10'
+                  )}
+                />
+              </div>
+              <div className="mt-4 transition-opacity duration-500" style={{ opacity: isDone || isActive ? 1 : 0.5 }}>
+                <p className="font-headline text-lg md:text-xl font-bold text-slate-200">{stage.name}</p>
+                <p className="text-sm text-muted-foreground">{stage.model}</p>
+              </div>
             </div>
-            <div className="mt-4 transition-opacity duration-500" style={{ opacity: index <= activeStage ? 1 : 0.5 }}>
-              <p className="font-headline text-lg md:text-xl font-bold text-slate-200">{stage.name}</p>
-              <p className="text-sm text-muted-foreground">{stage.model}</p>
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
        <p className="mt-12 text-lg text-slate-400 animate-pulse">Simulating tribunal deliberation...</p>
     </div>
