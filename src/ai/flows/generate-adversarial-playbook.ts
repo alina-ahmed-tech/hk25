@@ -32,18 +32,20 @@ const prompt = ai.definePrompt({
   name: 'generateAdversarialPlaybookPrompt',
   input: {schema: GenerateAdversarialPlaybookInputSchema},
   output: {schema: AdversarialPlaybookSchema},
-  prompt: `You are a master legal strategist with expertise in international arbitration, thinking multiple moves ahead. Your task is to create an exceptionally deep "Adversarial Playbook" based on the provided legal strategy. Adhere strictly to the provided JSON schema. Fields marked as optional in the schema can be omitted if there is no relevant information to include.
+  prompt: `You are a master legal strategist with expertise in international arbitration, thinking multiple moves ahead. Your task is to create an exceptionally deep "Adversarial Playbook" based on the provided legal strategy.
 
-Legal Strategy Document:
-{{{legalStrategy}}}
-
-Based on the document, generate the following:
-1.  **Potential Counter-Arguments:** Create an exhaustive list of every potential argument the opposing side could realistically make. Be creative and thorough. If no counter-arguments are found, you may omit the 'potentialCounterArguments' array.
-2.  **Rebuttals & Counter-Rebuttals:** For each counter-argument:
-    a.  Provide a set of strong, well-supported **rebuttals** our team can use. If applicable, include supporting **citations**. You may omit the 'citations' array.
-    b.  **Crucially, for each rebuttal, anticipate the next move.** Generate a list of likely **potentialCounterRebuttals** the opposing counsel might use in response to our rebuttal. For each, assess its strength as "High", "Medium", or "Low". You may omit the 'potentialCounterRebuttals' array if there are none.
-3.  **Opponent Counsel Analysis:** Provide a brief analysis of what the opposing counsel's strategic patterns might be, based on the nature of the case. Frame this as a general strategic forecast.
-`,
+  Legal Strategy Document:
+  {{{legalStrategy}}}
+  
+  Adhere strictly to the provided JSON schema. **Crucially, you must provide a value for every field. For any list or array field (like 'potentialCounterArguments', 'rebuttals', 'citations', 'potentialCounterRebuttals'), if there are no items to include, you MUST provide an empty array \`[]\`. Do not omit any fields.**
+  
+  Based on the document, generate the following:
+  1.  **Potential Counter-Arguments:** Create an exhaustive list of every potential argument the opposing side could realistically make. If none are found, return an empty array for 'potentialCounterArguments'.
+  2.  **Rebuttals & Counter-Rebuttals:** For each counter-argument:
+      a.  Provide a set of strong, well-supported **rebuttals**. If there are no rebuttals for a counter-argument, provide an empty 'rebuttals' array. For each rebuttal, include supporting **citations**. If a rebuttal has no citations, provide an empty 'citations' array.
+      b.  For each rebuttal, anticipate and generate a list of likely **potentialCounterRebuttals**. For each, assess its strength as "High", "Medium", or "Low". If a rebuttal has no counter-rebuttals, provide an empty 'potentialCounterRebuttals' array.
+  3.  **Opponent Counsel Analysis:** Provide a brief analysis of what the opposing counsel's strategic patterns might be.
+  `,
 });
 
 const generateAdversarialPlaybookFlow = ai.defineFlow(

@@ -9,17 +9,17 @@ const CounterRebuttalSchema = z.object({
 
 const RebuttalSchema = z.object({
   rebuttal: z.string().describe('A potential rebuttal to the counter-argument.'),
-  citations: z.array(z.string()).optional().describe('Case citations to support the rebuttal.'),
-  potentialCounterRebuttals: z.array(CounterRebuttalSchema).optional().describe("A list of potential counter-rebuttals the opponent might use in response to our rebuttal.")
+  citations: z.array(z.string()).describe('Case citations to support the rebuttal. Provide an empty array if there are none.'),
+  potentialCounterRebuttals: z.array(CounterRebuttalSchema).describe("A list of potential counter-rebuttals the opponent might use in response to our rebuttal. Provide an empty array if there are none.")
 });
 
 const CounterArgumentSchema = z.object({
   counterArgument: z.string().describe('A potential counter-argument the opponent might raise.'),
-  rebuttals: z.array(RebuttalSchema).optional().describe('Potential rebuttals to this counter-argument.'),
+  rebuttals: z.array(RebuttalSchema).describe('Potential rebuttals to this counter-argument. Provide an empty array if there are none.'),
 });
 
 export const AdversarialPlaybookSchema = z.object({
-  potentialCounterArguments: z.array(CounterArgumentSchema).optional().describe('An exhaustive list of potential counter-arguments.'),
+  potentialCounterArguments: z.array(CounterArgumentSchema).describe('An exhaustive list of potential counter-arguments. Provide an empty array if there are none.'),
   opponentCounselAnalysis: z
     .string()
     .describe(
@@ -35,30 +35,30 @@ export const GenerateAnalysisInputSchema = z.object({
 
 export const CaseCitationSchema = z.object({
     citation: z.string().describe("The name of the cited case."),
-    relevance: z.string().optional().describe("A brief explanation of how this case supports the argument.")
+    relevance: z.string().describe("A brief explanation of how this case supports the argument.")
 });
 
 export const LegalArgumentSchema = z.object({
   argument: z.string().describe('A compelling argument for the provided strategy.'),
-  caseCitations: z.array(CaseCitationSchema).optional().describe('List of key case citations with relevance explanations.'),
+  caseCitations: z.array(CaseCitationSchema).describe('List of key case citations with relevance explanations. Provide an empty array if there are none.'),
   detailedAnalysis: z.string().optional().describe("An extremely detailed, exhaustive analysis of the argument, generated in the background."),
 });
 
 export const WeaknessSchema = z.object({
   weakness: z.string().describe('A specific weakness identified in the overall strategy.'),
   vulnerabilityScore: z.number().min(1).max(10).describe('A numerical score from 1-10 indicating the severity of the vulnerability (1=low, 10=high).'),
-  rationale: z.string().optional().describe("A brief rationale explaining why this vulnerability score was given."),
+  rationale: z.string().describe("A brief rationale explaining why this vulnerability score was given."),
   detailedAnalysis: z.string().optional().describe("An extremely detailed, exhaustive analysis of the weakness, generated in the background."),
 });
 
 export const KeyVulnerabilitySchema = z.object({
   vulnerability: z.string().describe('A key vulnerability identified in the legal strategy.'),
-  affectedArguments: z.array(z.string()).optional().describe('List of arguments that are affected by this vulnerability.'),
+  affectedArguments: z.array(z.string()).describe('List of arguments that are affected by this vulnerability. Provide an empty array if there are none.'),
 });
 
 export const RefinedStrategySchema = z.object({
   recommendation: z.string().describe('A recommendation to refine the legal strategy.'),
-  rationale: z.string().optional().describe('The rationale behind the refined strategy recommendation.'),
+  rationale: z.string().describe('The rationale behind the refined strategy recommendation.'),
 });
 
 export const PredictiveAnalysisSchema = z.object({
@@ -67,14 +67,14 @@ export const PredictiveAnalysisSchema = z.object({
 });
 
 export const ArbiterSynthesisSchema = z.object({
-    keyVulnerabilities: z.array(KeyVulnerabilitySchema).optional().describe('Key vulnerabilities identified in the legal strategy.'),
-    refinedStrategy: z.array(RefinedStrategySchema).optional().describe('Recommendations for refining the legal strategy.'),
-    predictiveAnalysis: PredictiveAnalysisSchema.optional().describe('Predictive analysis of the case outcome.'),
+    keyVulnerabilities: z.array(KeyVulnerabilitySchema).describe('Key vulnerabilities identified in the legal strategy. Provide an empty array if there are none.'),
+    refinedStrategy: z.array(RefinedStrategySchema).describe('Recommendations for refining the legal strategy. Provide an empty array if there are none.'),
+    predictiveAnalysis: PredictiveAnalysisSchema.optional().describe('Predictive analysis of the case outcome. Omit this field entirely if a prediction cannot be made.'),
 });
 
 export const ThreePartAnalysisSchema = z.object({
-  advocateBrief: z.array(LegalArgumentSchema).optional().describe("The advocate's brief with key arguments and citations."),
-  identifiedWeaknesses: z.array(WeaknessSchema).optional().describe("A list of identified weaknesses in the overall strategy."),
+  advocateBrief: z.array(LegalArgumentSchema).describe("The advocate's brief with key arguments and citations. Provide an empty array if there are none."),
+  identifiedWeaknesses: z.array(WeaknessSchema).describe("A list of identified weaknesses in the overall strategy. Provide an empty array if there are none."),
   arbiterSynthesis: ArbiterSynthesisSchema.describe('The arbiter’s synthesis of the arguments and rebuttals.'),
 });
 

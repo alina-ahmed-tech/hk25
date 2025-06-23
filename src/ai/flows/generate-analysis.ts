@@ -30,20 +30,22 @@ const threePartAnalysisPrompt = ai.definePrompt({
   Legal Strategy to Analyze:
   {{{legalStrategy}}}
 
-  Produce a structured analysis in JSON format with three distinct parts. Adhere strictly to the provided JSON schema. Fields marked as optional in the schema can be omitted if there is no relevant information to include.
+  Produce a structured analysis in JSON format with three distinct parts. Adhere strictly to the provided JSON schema.
+  **Crucially, you must provide a value for every field. For any list or array field (like 'caseCitations', 'identifiedWeaknesses', etc.), if there are no items to include, you MUST provide an empty array \`[]\`. Do not omit any fields.**
+  The only exception is the 'predictiveAnalysis' object, which you may omit entirely if you cannot make a prediction with reasonable confidence.
 
   1.  **Advocate's Brief:**
-      *   Formulate the most compelling arguments for the provided strategy.
-      *   For each argument, provide a concise summary. If relevant, include key case citations with brief relevance explanations. You may omit 'caseCitations' if none apply.
+      *   Formulate the most compelling arguments for the provided strategy. If there are none, provide an empty array for 'advocateBrief'.
+      *   For each argument, provide a concise summary. If relevant, include key case citations. If there are no citations for an argument, provide an empty array for 'caseCitations'.
 
   2.  **Identified Weaknesses:**
-      *   Identify the most significant weaknesses in the overall legal strategy.
-      *   For each weakness, provide a description, a vulnerability score (1-10), and a brief rationale.
+      *   Identify the most significant weaknesses in the overall legal strategy. If there are none, provide an empty array for 'identifiedWeaknesses'.
+      *   For each weakness, provide a description, a vulnerability score (1-10), and a brief rationale. You must always provide a rationale.
 
   3.  **Arbiter's Synthesis:**
-      *   For each key vulnerability, identify it and list the specific arguments that it affects. You may omit 'affectedArguments' if it's not applicable. If no significant vulnerabilities are found, you may omit the 'keyVulnerabilities' array entirely.
-      *   Provide a high-level refined strategy, with a clear recommendation and rationale for each point. You may omit the 'refinedStrategy' array if no refinements are necessary.
-      *   Offer a predictive analysis of the case outcome, including a confidence level as a float between 0.0 and 1.0 (e.g., 0.75 for 75%). If you cannot make a prediction, you may omit the 'predictiveAnalysis' object.
+      *   For each key vulnerability, identify it and list the specific arguments that it affects. If no significant vulnerabilities are found, provide an empty array for 'keyVulnerabilities'. If a vulnerability affects no arguments, provide an empty array for 'affectedArguments'.
+      *   Provide a high-level refined strategy, with a clear recommendation and rationale for each point. If no refinements are necessary, provide an empty array for 'refinedStrategy'.
+      *   Offer a predictive analysis of the case outcome. If you cannot make a prediction, you may omit the 'predictiveAnalysis' object entirely.
   `,
 });
 
