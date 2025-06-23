@@ -12,12 +12,11 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import type {AdversarialPlaybook} from '@/lib/types';
-import {AdversarialPlaybookSchema} from '@/lib/types';
+import {AdversarialPlaybookSchema, GenerateAnalysisInputSchema} from '@/lib/types';
 
-const GenerateAdversarialPlaybookInputSchema = z.object({
-  legalStrategy: z.string().describe('The full legal strategy, including case facts and arguments, for which to generate a playbook.'),
-});
+const GenerateAdversarialPlaybookInputSchema = GenerateAnalysisInputSchema;
 export type GenerateAdversarialPlaybookInput = z.infer<typeof GenerateAdversarialPlaybookInputSchema>;
+
 
 const GenerateAdversarialPlaybookOutputSchema = z.object({
   adversarialPlaybook: AdversarialPlaybookSchema,
@@ -32,19 +31,29 @@ const prompt = ai.definePrompt({
   name: 'generateAdversarialPlaybookPrompt',
   input: {schema: GenerateAdversarialPlaybookInputSchema},
   output: {schema: AdversarialPlaybookSchema},
-  prompt: `You are a master legal strategist with expertise in international arbitration, thinking multiple moves ahead. Your task is to create an exceptionally deep "Adversarial Playbook" based on the provided legal strategy.
+  prompt: `You are a master legal strategist with expertise in anticipating and neutralizing opposing arguments. Your task is to create an exceptionally deep "Adversarial Playbook" based on the provided case information.
 
-  Legal Strategy Document:
-  {{{legalStrategy}}}
+  **Case Context:**
+  - **Area of Law:** {{areaOfLaw}}
+  - **Legal Strategy Document:** {{{legalStrategy}}}
+  {{#if judgeProfile}}
+  - **Judge Profile Summary:** {{judgeProfile.profileSummary}}
+  {{/if}}
+  {{#if lawyerProfiles}}
+  - **Opposing Counsel Profiles:**
+    {{#each lawyerProfiles}}
+    - **{{name}}**: {{profileSummary}} (Typical Negotiation Style: {{negotiationStyle}})
+    {{/each}}
+  {{/if}}
+
+  Adhere strictly to the provided JSON schema. **You must provide a value for every field. For any list or array, if there are no items to include, you MUST provide an empty array \`[]\`. Do not omit any fields.**
   
-  Adhere strictly to the provided JSON schema. **Crucially, you must provide a value for every field. For any list or array field (like 'potentialCounterArguments', 'rebuttals', 'citations', 'potentialCounterRebuttals'), if there are no items to include, you MUST provide an empty array \`[]\`. Do not omit any fields.**
-  
-  Based on the document, generate the following:
-  1.  **Potential Counter-Arguments:** Create an exhaustive list of every potential argument the opposing side could realistically make. If none are found, return an empty array for 'potentialCounterArguments'.
+  Based on all available information, generate the following:
+  1.  **Potential Counter-Arguments:** Create an exhaustive list of every potential argument the opposing side could realistically make. **These arguments should reflect the known styles and past strategies of the opposing counsel.**
   2.  **Rebuttals & Counter-Rebuttals:** For each counter-argument:
-      a.  Provide a set of strong, well-supported **rebuttals**. If there are no rebuttals for a counter-argument, provide an empty 'rebuttals' array. For each rebuttal, include supporting **citations**. If a rebuttal has no citations, provide an empty 'citations' array.
-      b.  For each rebuttal, anticipate and generate a list of likely **potentialCounterRebuttals**. For each, assess its strength as "High", "Medium", or "Low". If a rebuttal has no counter-rebuttals, provide an empty 'potentialCounterRebuttals' array.
-  3.  **Opponent Counsel Analysis:** Provide a brief analysis of what the opposing counsel's strategic patterns might be.
+      a.  Provide a set of strong, well-supported **rebuttals**. These should be framed in a way that would be most persuasive to the **presiding judge's known preferences and judicial philosophy.** For each rebuttal, include supporting **citations**.
+      b.  For each rebuttal, anticipate and generate a list of likely **potentialCounterRebuttals**, assessing each one's strength as "High", "Medium", or "Low".
+  3.  **Opponent Counsel Analysis:** Synthesize the provided lawyer profiles and the case facts into a cohesive analysis of their likely overall strategy in *this specific case*. How will they likely open? What will be their primary line of attack?
   `,
 });
 

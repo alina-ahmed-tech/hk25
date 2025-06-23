@@ -1,15 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import type { Analysis } from '@/lib/types';
+import type { Analysis, JudgeProfile, LawyerProfile } from '@/lib/types';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Lightbulb, TrendingUp, ThumbsDown, Scale, ShieldQuestion, ChevronRight, MessageCircle, HelpCircle } from 'lucide-react';
+import { Lightbulb, TrendingUp, ThumbsDown, Scale, ShieldQuestion, ChevronRight, MessageCircle, HelpCircle, Gavel, Users, Star, Briefcase, FileText } from 'lucide-react';
 import { LegalCaseModal } from './LegalCaseModal';
 import ReactMarkdown from 'react-markdown';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Spinner } from '../Spinner';
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 
 const DetailSection = ({ detailedAnalysis, isGeneratingDetails }: { detailedAnalysis?: string; isGeneratingDetails: boolean }) => {
   if (detailedAnalysis) {
@@ -53,9 +54,103 @@ type AnalysisDashboardProps = {
 export function AnalysisDashboard({ analysis, isGeneratingDetails }: AnalysisDashboardProps) {
   const [modalCase, setModalCase] = useState<string | null>(null);
 
+  const defaultOpen = ['advocate'];
+  if (analysis.judgeProfile) defaultOpen.push('judge');
+  if (analysis.lawyerProfiles && analysis.lawyerProfiles.length > 0) defaultOpen.push('counsel');
+
+
   return (
     <div className="animate-fade-in space-y-4">
-      <Accordion type="single" collapsible className="w-full space-y-4" defaultValue="advocate">
+      <Accordion type="multiple" className="w-full space-y-4" defaultValue={defaultOpen}>
+        
+        {analysis.judgeProfile && (
+          <AccordionItem value="judge" className="border-0">
+            <div className="bg-card rounded-lg border">
+              <AccordionTrigger className="p-6 hover:no-underline">
+                <div className="flex items-center gap-4">
+                  <div className="p-2 bg-secondary rounded-lg">
+                    <Gavel className="h-6 w-6 text-yellow-300" />
+                  </div>
+                  <h2 className="font-headline text-2xl text-yellow-300">Judicial Profile</h2>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-6 pb-6">
+                 <Card className="bg-background/50 border-border/50">
+                    <CardHeader>
+                        <CardTitle className="text-xl text-foreground">{analysis.judgeProfile.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <p className="text-sm text-muted-foreground">{analysis.judgeProfile.profileSummary}</p>
+                        <div>
+                            <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Star className="h-4 w-4 text-yellow-300"/> Known Preferences</h4>
+                            <ul className="list-disc list-inside space-y-1 text-sm text-foreground/90">
+                                {(analysis.judgeProfile.knownPreferences || []).map((item, index) => (
+                                    <li key={index}>{item}</li>
+                                ))}
+                            </ul>
+                        </div>
+                         <div>
+                            <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><Briefcase className="h-4 w-4 text-yellow-300"/> Relevant Past Cases</h4>
+                            <div className="space-y-2">
+                                {(analysis.judgeProfile.pastCases || []).map((item, index) => (
+                                    <div key={index} className="p-2 bg-secondary/30 rounded-md">
+                                        <p className="font-semibold text-foreground/90">{item.caseName}</p>
+                                        <p className="text-xs text-muted-foreground">{item.summary}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </CardContent>
+                 </Card>
+              </AccordionContent>
+            </div>
+          </AccordionItem>
+        )}
+        
+        {analysis.lawyerProfiles && analysis.lawyerProfiles.length > 0 && (
+          <AccordionItem value="counsel" className="border-0">
+            <div className="bg-card rounded-lg border">
+              <AccordionTrigger className="p-6 hover:no-underline">
+                <div className="flex items-center gap-4">
+                  <div className="p-2 bg-secondary rounded-lg">
+                    <Users className="h-6 w-6 text-green-400" />
+                  </div>
+                  <h2 className="font-headline text-2xl text-green-400">Opposing Counsel Dossier</h2>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-6 pb-6">
+                <div className="grid gap-4 md:grid-cols-2">
+                    {(analysis.lawyerProfiles).map((lawyer, index) => (
+                        <Card key={index} className="bg-background/50 border-border/50">
+                            <CardHeader>
+                                <CardTitle className="text-xl text-foreground">{lawyer.name}</CardTitle>
+                                <CardContent className="text-sm text-muted-foreground p-0 pt-2">{lawyer.profileSummary}</CardContent>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div>
+                                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><FileText className="h-4 w-4 text-green-400"/> Case History</h4>
+                                    <div className="space-y-2">
+                                        {(lawyer.caseHistory || []).map((item, c_index) => (
+                                            <div key={c_index} className="p-2 bg-secondary/30 rounded-md">
+                                                <p className="font-semibold text-foreground/90">{item.caseName} <span className="text-xs font-normal text-muted-foreground">({item.outcome})</span></p>
+                                                <p className="text-xs text-muted-foreground">Strategy: {item.strategyUsed}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><MessageCircle className="h-4 w-4 text-green-400"/> Negotiation Style</h4>
+                                    <p className="text-sm text-foreground/90">{lawyer.negotiationStyle}</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+              </AccordionContent>
+            </div>
+          </AccordionItem>
+        )}
+
         <AccordionItem value="advocate" className="border-0">
           <div className="bg-card rounded-lg border">
             <AccordionTrigger className="p-6 hover:no-underline">

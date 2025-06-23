@@ -129,7 +129,7 @@ export default function ProjectPage() {
                 toast({ title: "Timeout", description: "Project creation is taking longer than expected.", variant: "destructive"});
                 router.push('/dashboard');
             }
-        }, 60000);
+        }, 120000); // Increased timeout for longer analysis
 
         return () => {
           clearInterval(intervalId);
@@ -186,23 +186,32 @@ export default function ProjectPage() {
   }, [project, user, db, toast]);
 
 
-  const handleStrategySubmit = async (strategy: string) => {
+  const handleStrategySubmit = async (data: { strategy: string; areaOfLaw: string; judgeName: string; opposingCounsel: string[] }) => {
     if (!user) return;
     setIsSubmitting(true);
     setPageState('thinking');
   
     try {
-      const nameResult = await generateProjectName({ strategyText: strategy });
-      const analysisResult = await generateAnalysis({ legalStrategy: strategy });
+      const nameResult = await generateProjectName({ strategyText: data.strategy });
+      
+      const analysisResult = await generateAnalysis({ 
+          legalStrategy: data.strategy,
+          areaOfLaw: data.areaOfLaw,
+          judgeName: data.judgeName,
+          opposingCounsel: data.opposingCounsel
+      });
       
       const newProjectData: Project = {
         id: `local-${Date.now()}`,
         name: nameResult.projectName,
         userId: user.uid,
-        strategy: strategy,
+        strategy: data.strategy,
         analysis: analysisResult.analysisDashboard,
         analysisStatus: 'generating_details',
         createdAt: new Date(),
+        areaOfLaw: data.areaOfLaw,
+        judgeName: data.judgeName,
+        opposingCounsel: data.opposingCounsel,
       };
       
       if (!db) {
@@ -222,6 +231,9 @@ export default function ProjectPage() {
         analysis: newProjectData.analysis,
         analysisStatus: newProjectData.analysisStatus,
         createdAt: serverTimestamp(),
+        areaOfLaw: data.areaOfLaw,
+        judgeName: data.judgeName,
+        opposingCounsel: data.opposingCounsel,
       }
 
       const projectCollectionRef = collection(db, 'users', user.uid, 'projects');

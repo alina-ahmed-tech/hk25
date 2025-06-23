@@ -17,3 +17,5 @@ import '@/ai/flows/generate-client-report.ts';
 import '@/ai/flows/generate-speech.ts';
 import '@/ai/flows/generate-refined-strategy.ts';
 import '@/ai/flows/refine-strategy-text.ts';
+import '@/ai/flows/generate-judge-profile.ts';
+import '@/ai/flows/generate-lawyer-profile.ts';

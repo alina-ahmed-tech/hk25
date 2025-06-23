@@ -27,10 +27,38 @@ export const AdversarialPlaybookSchema = z.object({
     ),
 });
 
+// NEW Schemas for Judge and Lawyer Profiles
+export const JudgeProfileSchema = z.object({
+  name: z.string(),
+  profileSummary: z.string().describe("A concise summary of the judge's judicial philosophy, temperament, and key characteristics."),
+  pastCases: z.array(z.object({
+    caseName: z.string(),
+    summary: z.string().describe("A brief summary of the case and the judge's role or key ruling.")
+  })).describe("A list of relevant past cases. Provide an empty array if none are found."),
+  knownPreferences: z.array(z.string()).describe("A list of known preferences, dislikes, or judicial quirks (e.g., 'Prefers concise arguments', 'Dislikes ad hominem attacks'). Provide an empty array if none are found."),
+});
+
+export const LawyerProfileSchema = z.object({
+  name: z.string(),
+  profileSummary: z.string().describe("A concise summary of the lawyer's professional style, reputation, and strategic tendencies."),
+  caseHistory: z.array(z.object({
+    caseName: z.string(),
+    outcome: z.string().describe("The outcome of the case (e.g., 'Win', 'Loss', 'Settlement')."),
+    strategyUsed: z.string().describe("A brief description of the strategy or key arguments used by the lawyer in that case.")
+  })).describe("A list of notable past cases. Provide an empty array if none are found."),
+  negotiationStyle: z.string().describe("An analysis of the lawyer's typical negotiation style (e.g., 'Aggressive', 'Collaborative', 'Principled')."),
+});
+
 
 // For Main Analysis
 export const GenerateAnalysisInputSchema = z.object({
   legalStrategy: z.string().describe('The legal strategy to be analyzed, including case facts and initial arguments.'),
+  areaOfLaw: z.string().describe('The specific area of law for the case (e.g., Corporate, Criminal, Family).'),
+  judgeName: z.string().optional().describe("The name of the judge or arbiter presiding over the case."),
+  opposingCounsel: z.array(z.string()).optional().describe("A list of names for the opposing counsel lawyers."),
+  // These fields are for passing the generated profiles between flows
+  judgeProfile: JudgeProfileSchema.optional(),
+  lawyerProfiles: z.array(LawyerProfileSchema).optional(),
 });
 export type GenerateAnalysisInput = z.infer<typeof GenerateAnalysisInputSchema>;
 
@@ -84,6 +112,8 @@ export const AnalysisDashboardSchema = z.object({
   identifiedWeaknesses: z.array(WeaknessSchema).describe("A list of identified weaknesses in the overall strategy. Provide an empty array if there are none."),
   arbiterSynthesis: ArbiterSynthesisSchema.describe('The arbiter’s synthesis of the arguments and rebuttals.'),
   adversarialPlaybook: AdversarialPlaybookSchema.describe('An adversarial playbook with counter-arguments and rebuttals.'),
+  judgeProfile: JudgeProfileSchema.optional().describe("An in-depth profile of the presiding judge."),
+  lawyerProfiles: z.array(LawyerProfileSchema).optional().describe("In-depth profiles of the opposing counsel."),
 });
 
 
@@ -159,12 +189,18 @@ export type Project = {
   mainChatHistory?: ChatMessage[];
   simulationState?: SimulationState;
   finalStrategy?: string;
+  // New fields for context
+  areaOfLaw?: string;
+  judgeName?: string;
+  opposingCounsel?: string[];
 };
 
 export type Analysis = z.infer<typeof AnalysisDashboardSchema>;
 export type LegalArgument = z.infer<typeof LegalArgumentSchema>;
 export type Weakness = z.infer<typeof WeaknessSchema>;
 export type AdversarialPlaybook = z.infer<typeof AdversarialPlaybookSchema>;
+export type JudgeProfile = z.infer<typeof JudgeProfileSchema>;
+export type LawyerProfile = z.infer<typeof LawyerProfileSchema>;
 
 export type ActionItem = {
   id: string;
