@@ -100,34 +100,34 @@ const generateInternalMemoFlow = ai.defineFlow(
             new Paragraph({ text: `DATE: ${new Date().toLocaleDateString()}`, heading: HeadingLevel.HEADING_1, style: 'Heading1TG' }),
 
             new Paragraph({ text: 'I. Executive Summary', heading: HeadingLevel.HEADING_1, style: 'Heading1TG' }),
-            new Paragraph({ text: memoContent.executive_summary, style: 'BodyTextTG' }),
+            new Paragraph({ text: memoContent.executive_summary || '', style: 'BodyTextTG' }),
 
             new Paragraph({ text: 'II. Risk Analysis', heading: HeadingLevel.HEADING_1, style: 'Heading1TG' }),
-            ...memoContent.risk_analysis.flatMap(risk => [
-                new Paragraph({ text: risk.risk_title, heading: HeadingLevel.HEADING_2, style: 'Heading2TG' }),
-                new Paragraph({ text: `Vulnerability Score: ${risk.vulnerability_score}/10`, style: 'BodyTextTG', run: { bold: true } }),
-                new Paragraph({ text: risk.description, style: 'BodyTextTG' }),
+            ...(memoContent.risk_analysis || []).flatMap(risk => [
+                new Paragraph({ text: risk.risk_title || 'Untitled Risk', heading: HeadingLevel.HEADING_2, style: 'Heading2TG' }),
+                new Paragraph({ text: `Vulnerability Score: ${risk.vulnerability_score || 'N/A'}/10`, style: 'BodyTextTG', run: { bold: true } }),
+                new Paragraph({ text: risk.description || 'No description provided.', style: 'BodyTextTG' }),
             ]),
             
             new Paragraph({ text: 'III. Strategic Recommendations', heading: HeadingLevel.HEADING_1, style: 'Heading1TG' }),
-            ...memoContent.strategic_recommendations.flatMap(rec => [
-                new Paragraph({ text: rec.pillar_title, heading: HeadingLevel.HEADING_2, style: 'Heading2TG' }),
-                new Paragraph({ text: rec.detailed_rationale, style: 'BodyTextTG' }),
+            ...(memoContent.strategic_recommendations || []).flatMap(rec => [
+                new Paragraph({ text: rec.pillar_title || 'Untitled Recommendation', heading: HeadingLevel.HEADING_2, style: 'Heading2TG' }),
+                new Paragraph({ text: rec.detailed_rationale || 'No rationale provided.', style: 'BodyTextTG' }),
             ]),
 
             new Paragraph({ text: 'IV. Action Plan', heading: HeadingLevel.HEADING_1, style: 'Heading1TG' }),
-            ...memoContent.action_plan.flatMap(item => [
-                new Paragraph({ text: `Category: ${item.category}`, heading: HeadingLevel.HEADING_2, style: 'Heading2TG' }),
-                new Paragraph({ text: item.task_description, style: 'BodyTextTG', bullet: { level: 0 } }),
+            ...(memoContent.action_plan || []).flatMap(item => [
+                new Paragraph({ text: `Category: ${item.category || 'Uncategorized'}`, heading: HeadingLevel.HEADING_2, style: 'Heading2TG' }),
+                new Paragraph({ text: item.task_description || 'No task description.', style: 'BodyTextTG', bullet: { level: 0 } }),
             ]),
 
             new Paragraph({ children: [new PageBreak()] }),
             new Paragraph({ text: 'Appendix: Research Log', heading: HeadingLevel.HEADING_1, style: 'AppendixHeaderTG' }),
-            ...memoContent.research_log.flatMap(log => [
-                new Paragraph({ text: log.case_name, heading: HeadingLevel.HEADING_2, style: 'Heading2TG' }),
-                new Paragraph({ text: `Summary: ${log.case_summary}`, style: 'BodyTextTG' }),
-                new Paragraph({ text: `Key Quote: "${log.source_quote}"`, style: 'CitationTG' }),
-                new Paragraph({ text: `AI Reasoning: ${log.ai_reasoning}`, style: 'BodyTextTG' }),
+            ...(memoContent.research_log || []).flatMap(log => [
+                new Paragraph({ text: log.case_name || 'Unknown Case', heading: HeadingLevel.HEADING_2, style: 'Heading2TG' }),
+                new Paragraph({ text: `Summary: ${log.case_summary || ''}`, style: 'BodyTextTG' }),
+                new Paragraph({ text: `Key Quote: "${log.source_quote || ''}"`, style: 'CitationTG' }),
+                new Paragraph({ text: `AI Reasoning: ${log.ai_reasoning || ''}`, style: 'BodyTextTG' }),
                 new Paragraph({ text: '' }), // Spacer
             ]),
         ],
