@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Wand2, Lightbulb, Check, X, Trash2, PlusCircle } from 'lucide-react';
+import { Wand2, Lightbulb, Check, X, Trash2, PlusCircle, UploadCloud, File as FileIcon } from 'lucide-react';
 import { Spinner } from '../Spinner';
 import { useDebounce } from '@/hooks/use-debounce';
 import { optimizePrompt } from '@/lib/actions';
@@ -16,7 +16,13 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 
 type StrategyFormProps = {
-  onSubmit: (data: { strategy: string; areaOfLaw: string; judgeName: string; opposingCounsel: string[] }) => void;
+  onSubmit: (data: {
+    strategy: string;
+    areaOfLaw: string;
+    judgeName: string;
+    opposingCounsel: string[];
+    files: File[];
+  }) => void;
   isLoading: boolean;
 };
 
@@ -45,6 +51,8 @@ export function StrategyForm({ onSubmit, isLoading }: StrategyFormProps) {
   const [areaOfLaw, setAreaOfLaw] = useState('');
   const [judgeName, setJudgeName] = useState('');
   const [opposingCounsel, setOpposingCounsel] = useState<string[]>(['']);
+  const [files, setFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const debouncedStrategy = useDebounce(strategy, 2000);
 
@@ -86,6 +94,24 @@ export function StrategyForm({ onSubmit, isLoading }: StrategyFormProps) {
     setOpposingCounsel(newCounsel);
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+    }
+  };
+
+  const handleRemoveFile = (index: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+  };
+  
+  const onFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        setFiles(prev => [...prev, ...Array.from(e.dataTransfer.files)]);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (strategy.trim() && areaOfLaw) {
@@ -94,6 +120,7 @@ export function StrategyForm({ onSubmit, isLoading }: StrategyFormProps) {
         areaOfLaw,
         judgeName: judgeName.trim(),
         opposingCounsel: opposingCounsel.map(n => n.trim()).filter(n => n),
+        files: files,
       });
     } else {
       toast({
@@ -137,10 +164,59 @@ export function StrategyForm({ onSubmit, isLoading }: StrategyFormProps) {
             />
           </div>
 
+          <div className="space-y-2">
+            <Label>Attach Documents or Images (Optional)</Label>
+            <div 
+              className="relative flex flex-col items-center justify-center w-full p-6 border-2 border-dashed rounded-lg cursor-pointer border-border/50 hover:border-primary/50 bg-slate-900/40 transition-colors"
+              onClick={() => fileInputRef.current?.click()}
+              onDrop={onFileDrop}
+              onDragOver={(e) => e.preventDefault()}
+            >
+              <UploadCloud className="w-10 h-10 mb-2 text-muted-foreground" />
+              <p className="mb-2 text-sm text-muted-foreground">
+                <span className="font-semibold text-primary">Click to upload</span> or drag and drop
+              </p>
+              <p className="text-xs text-muted-foreground">PDF, DOCX, PNG, JPG, etc.</p>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                multiple
+                disabled={isLoading}
+              />
+            </div>
+            {files.length > 0 && (
+              <div className="pt-4 space-y-2">
+                <h4 className="text-sm font-medium text-foreground">Attached Files:</h4>
+                <div className="space-y-2">
+                  {files.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 text-sm rounded-md bg-secondary">
+                      <div className="flex items-center gap-2 truncate">
+                        <FileIcon className="h-4 w-4 shrink-0" />
+                        <span className="truncate">{file.name}</span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => handleRemoveFile(index)}
+                        disabled={isLoading}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                   <Label htmlFor="area-of-law">Area of Law</Label>
-                   <Select value={areaOfLaw} onValueChange={setAreaOfLaw}>
+                   <Select value={areaOfLaw} onValueChange={setAreaOfLaw} disabled={isLoading}>
                       <SelectTrigger id="area-of-law" className="bg-slate-900/60 border-slate-800">
                         <SelectValue placeholder="Select the relevant area of law..." />
                       </SelectTrigger>

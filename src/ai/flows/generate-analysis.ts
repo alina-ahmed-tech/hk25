@@ -33,6 +33,13 @@ const threePartAnalysisPrompt = ai.definePrompt({
   **Primary Information to Analyze:**
   - **Area of Law:** {{areaOfLaw}}
   - **Legal Strategy Document:** {{{legalStrategy}}}
+  {{#if files.length}}
+  - **Attached Documents/Images:** Analyze the following attachments as primary sources of information.
+    {{#each files}}
+    - **File: {{name}}**
+      {{media url=dataUri}}
+    {{/each}}
+  {{/if}}
 
   **Key Personnel Profiles (for context):**
   {{#if judgeProfile}}

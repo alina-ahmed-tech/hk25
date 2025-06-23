@@ -186,19 +186,30 @@ export default function ProjectPage() {
   }, [project, user, db, toast]);
 
 
-  const handleStrategySubmit = async (data: { strategy: string; areaOfLaw: string; judgeName: string; opposingCounsel: string[] }) => {
+  const handleStrategySubmit = async (data: { strategy: string; areaOfLaw: string; judgeName: string; opposingCounsel: string[], files: File[] }) => {
     if (!user) return;
     setIsSubmitting(true);
     setPageState('thinking');
   
     try {
+      const fileDataPromises = data.files.map(file => {
+          return new Promise<{ name: string; dataUri: string }>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve({ name: file.name, dataUri: reader.result as string });
+              reader.onerror = (error) => reject(error);
+              reader.readAsDataURL(file);
+          });
+      });
+      const fileData = await Promise.all(fileDataPromises);
+
       const nameResult = await generateProjectName({ strategyText: data.strategy });
       
       const analysisResult = await generateAnalysis({ 
           legalStrategy: data.strategy,
           areaOfLaw: data.areaOfLaw,
           judgeName: data.judgeName,
-          opposingCounsel: data.opposingCounsel
+          opposingCounsel: data.opposingCounsel,
+          files: fileData,
       });
       
       const newProjectData: Project = {
@@ -212,6 +223,7 @@ export default function ProjectPage() {
         areaOfLaw: data.areaOfLaw,
         judgeName: data.judgeName,
         opposingCounsel: data.opposingCounsel,
+        fileNames: fileData.map(f => f.name),
       };
       
       if (!db) {
@@ -234,6 +246,7 @@ export default function ProjectPage() {
         areaOfLaw: data.areaOfLaw,
         judgeName: data.judgeName,
         opposingCounsel: data.opposingCounsel,
+        fileNames: fileData.map(f => f.name),
       }
 
       const projectCollectionRef = collection(db, 'users', user.uid, 'projects');

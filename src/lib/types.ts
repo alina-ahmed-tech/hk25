@@ -66,6 +66,10 @@ export const GenerateAnalysisInputSchema = z.object({
   areaOfLaw: z.string().describe('The specific area of law for the case (e.g., Corporate, Criminal, Family).'),
   judgeName: z.string().optional().describe("The name of the judge or arbiter presiding over the case."),
   opposingCounsel: z.array(z.string()).optional().describe("A list of names for the opposing counsel lawyers."),
+  files: z.array(z.object({
+    name: z.string(),
+    dataUri: z.string().describe("A file attached by the user, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."),
+  })).optional().describe("An optional list of files (documents or images) to analyze along with the strategy text."),
   // These fields are for passing the generated profiles between flows
   judgeProfile: JudgeProfileSchema.optional(),
   lawyerProfiles: z.array(LawyerProfileSchema).optional(),
@@ -203,6 +207,7 @@ export type Project = {
   areaOfLaw?: string;
   judgeName?: string;
   opposingCounsel?: string[];
+  fileNames?: string[];
 };
 
 export type Analysis = z.infer<typeof AnalysisDashboardSchema>;
