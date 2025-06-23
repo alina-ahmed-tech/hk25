@@ -273,7 +273,7 @@ export function AnalysisDashboard({ analysis, isGeneratingDetails }: AnalysisDas
             <AnimatePresence>
             {selectedCard && (
                 <motion.div
-                    className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 sm:p-8 z-50"
+                    className="fixed inset-0 bg-background/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-8 z-50"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
