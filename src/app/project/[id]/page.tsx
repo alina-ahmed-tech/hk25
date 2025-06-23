@@ -409,6 +409,61 @@ export default function ProjectPage() {
         return project?.analysis && user ? (
           <div className="space-y-8">
             <AnalysisDashboard analysis={project.analysis} isGeneratingDetails={isGeneratingDetails} />
+
+            <Card>
+              <CardHeader>
+                  <CardTitle className="font-headline text-2xl text-primary">Final Strategy</CardTitle>
+              </CardHeader>
+              <CardContent>
+                  {isEditingStrategy ? (
+                      <div className="space-y-4">
+                          <Textarea
+                              value={strategyDraft}
+                              onChange={(e) => setStrategyDraft(e.target.value)}
+                              className="min-h-[300px] text-base bg-background"
+                              placeholder="Refine your strategy here..."
+                          />
+                          <div className="p-4 border rounded-lg bg-secondary/30 space-y-2">
+                              <h4 className="text-sm font-semibold text-foreground">Refine with AI</h4>
+                              <div className="flex items-center gap-2">
+                                  <Input
+                                      value={refineInstruction}
+                                      onChange={(e) => setRefineInstruction(e.target.value)}
+                                      placeholder="e.g., 'Make the tone more assertive' or 'Add a point about contract law'"
+                                      className="bg-background"
+                                      disabled={isRefining}
+                                  />
+                                  <Button onClick={handleRefineWithAI} disabled={isRefining}>
+                                      {isRefining ? <Spinner className="mr-2" /> : <Wand2 className="mr-2" />}
+                                      Refine
+                                  </Button>
+                              </div>
+                          </div>
+                          <div className="flex justify-end gap-2">
+                              <Button variant="outline" onClick={handleCancelEdit}>Cancel</Button>
+                              <Button onClick={handleSaveStrategy}>Save Strategy</Button>
+                          </div>
+                      </div>
+                  ) : project.finalStrategy ? (
+                      <div className="space-y-4">
+                          <div className="prose prose-invert prose-sm max-w-none prose-p:text-foreground whitespace-pre-wrap p-4 bg-background rounded-lg border">
+                              {project.finalStrategy}
+                          </div>
+                           <div className="flex justify-end">
+                              <Button variant="outline" onClick={handleEditClick}><PenSquare className="mr-2" /> Edit</Button>
+                          </div>
+                      </div>
+                  ) : (
+                      <div className="text-center p-4">
+                          <p className="text-muted-foreground mb-4">Generate a detailed strategy draft based on the Arbiter's Synthesis.</p>
+                          <Button onClick={handleGenerateDraft} disabled={isGeneratingStrategy}>
+                              {isGeneratingStrategy ? <Spinner className="mr-2" /> : <PenSquare className="mr-2" />}
+                              {isGeneratingStrategy ? 'Generating...' : 'Generate Initial Draft'}
+                          </Button>
+                      </div>
+                  )}
+              </CardContent>
+            </Card>
             
             <Card>
                 <CardHeader>
@@ -467,61 +522,6 @@ export default function ProjectPage() {
                          />
                     </div>
                 </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                  <CardTitle className="font-headline text-2xl text-primary">Final Strategy</CardTitle>
-              </CardHeader>
-              <CardContent>
-                  {isEditingStrategy ? (
-                      <div className="space-y-4">
-                          <Textarea
-                              value={strategyDraft}
-                              onChange={(e) => setStrategyDraft(e.target.value)}
-                              className="min-h-[300px] text-base bg-background"
-                              placeholder="Refine your strategy here..."
-                          />
-                          <div className="p-4 border rounded-lg bg-secondary/30 space-y-2">
-                              <h4 className="text-sm font-semibold text-foreground">Refine with AI</h4>
-                              <div className="flex items-center gap-2">
-                                  <Input
-                                      value={refineInstruction}
-                                      onChange={(e) => setRefineInstruction(e.target.value)}
-                                      placeholder="e.g., 'Make the tone more assertive' or 'Add a point about contract law'"
-                                      className="bg-background"
-                                      disabled={isRefining}
-                                  />
-                                  <Button onClick={handleRefineWithAI} disabled={isRefining}>
-                                      {isRefining ? <Spinner className="mr-2" /> : <Wand2 className="mr-2" />}
-                                      Refine
-                                  </Button>
-                              </div>
-                          </div>
-                          <div className="flex justify-end gap-2">
-                              <Button variant="outline" onClick={handleCancelEdit}>Cancel</Button>
-                              <Button onClick={handleSaveStrategy}>Save Strategy</Button>
-                          </div>
-                      </div>
-                  ) : project.finalStrategy ? (
-                      <div className="space-y-4">
-                          <div className="prose prose-invert prose-sm max-w-none prose-p:text-foreground whitespace-pre-wrap p-4 bg-background rounded-lg border">
-                              {project.finalStrategy}
-                          </div>
-                           <div className="flex justify-end">
-                              <Button variant="outline" onClick={handleEditClick}><PenSquare className="mr-2" /> Edit</Button>
-                          </div>
-                      </div>
-                  ) : (
-                      <div className="text-center p-4">
-                          <p className="text-muted-foreground mb-4">Generate a detailed strategy draft based on the Arbiter's Synthesis.</p>
-                          <Button onClick={handleGenerateDraft} disabled={isGeneratingStrategy}>
-                              {isGeneratingStrategy ? <Spinner className="mr-2" /> : <PenSquare className="mr-2" />}
-                              {isGeneratingStrategy ? 'Generating...' : 'Generate Initial Draft'}
-                          </Button>
-                      </div>
-                  )}
-              </CardContent>
             </Card>
 
             {project.actionPlan && (
