@@ -24,6 +24,10 @@ import { generateAllDeepDives as generateAllDeepDivesFlow } from '@/ai/flows/gen
 import type { GenerateAllDeepDivesInput, GenerateAllDeepDivesOutput } from '@/ai/flows/generate-all-deep-dives';
 import { generateSpeech as generateSpeechFlow } from '@/ai/flows/generate-speech';
 import type { GenerateSpeechInput, GenerateSpeechOutput } from '@/ai/flows/generate-speech';
+import { generateRefinedStrategy as generateRefinedStrategyFlow } from '@/ai/flows/generate-refined-strategy';
+import type { GenerateRefinedStrategyInput, GenerateRefinedStrategyOutput } from '@/ai/flows/generate-refined-strategy';
+import { refineStrategyText as refineStrategyTextFlow } from '@/ai/flows/refine-strategy-text';
+import type { RefineStrategyTextInput, RefineStrategyTextOutput } from '@/ai/flows/refine-strategy-text';
 
 
 export async function generateAnalysis(
@@ -96,4 +100,16 @@ export async function generateSpeech(
     input: GenerateSpeechInput
 ): Promise<GenerateSpeechOutput> {
     return await generateSpeechFlow(input);
+}
+
+export async function generateRefinedStrategy(
+  input: GenerateRefinedStrategyInput
+): Promise<GenerateRefinedStrategyOutput> {
+  return await generateRefinedStrategyFlow(input);
+}
+
+export async function refineStrategyText(
+  input: RefineStrategyTextInput
+): Promise<RefineStrategyTextOutput> {
+  return await refineStrategyTextFlow(input);
 }

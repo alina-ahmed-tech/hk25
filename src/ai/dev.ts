@@ -15,3 +15,5 @@ import '@/ai/flows/generate-all-deep-dives.ts';
 import '@/ai/flows/generate-internal-memo.ts';
 import '@/ai/flows/generate-client-report.ts';
 import '@/ai/flows/generate-speech.ts';
+import '@/ai/flows/generate-refined-strategy.ts';
+import '@/ai/flows/refine-strategy-text.ts';

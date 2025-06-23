@@ -19,10 +19,11 @@ import { ChatWindow } from '@/components/features/ChatWindow';
 import { ScopedChatDialog } from '@/components/features/ScopedChatDialog';
 import { ActionPlanDraftDialog } from '@/components/features/ActionPlanDraftDialog';
 import { DocumentGenerationButton } from '@/components/features/DocumentGenerationButton';
-import { generateAnalysis, generateActionPlan, generateProjectName, generateAllDeepDives } from '@/lib/actions';
+import { generateAnalysis, generateActionPlan, generateProjectName, generateAllDeepDives, generateRefinedStrategy, refineStrategyText } from '@/lib/actions';
 import { getAIErrorMessage } from '@/lib/utils';
-import { MessageSquare, ListTodo, Pencil, Rocket, ChevronRight, FileDown } from 'lucide-react';
+import { MessageSquare, ListTodo, Pencil, Rocket, ChevronRight, FileDown, Wand2, PenSquare } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 
 type PageState = 'form' | 'thinking' | 'dashboard';
 
@@ -47,6 +48,13 @@ export default function ProjectPage() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [projectName, setProjectName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // State for Final Strategy feature
+  const [isEditingStrategy, setIsEditingStrategy] = useState(false);
+  const [strategyDraft, setStrategyDraft] = useState('');
+  const [isGeneratingStrategy, setIsGeneratingStrategy] = useState(false);
+  const [refineInstruction, setRefineInstruction] = useState('');
+  const [isRefining, setIsRefining] = useState(false);
 
   useEffect(() => {
     if (isNewProject) {
@@ -107,6 +115,7 @@ export default function ProjectPage() {
       const isPending = sessionStorage.getItem('pending-project-creation') === projectId;
       if (isPending) {
         setLoading(true);
+        setPageState('thinking');
         const intervalId = setInterval(async () => {
           const success = await fetchAndSet();
           if (success) {
@@ -134,7 +143,6 @@ export default function ProjectPage() {
     };
     
     loadProjectData();
-    // This effect should only run when the user or project ID changes.
   }, [projectId, isNewProject, user, db, router, toast]);
 
   // Effect to trigger background deep dive generation
@@ -184,12 +192,11 @@ export default function ProjectPage() {
     setPageState('thinking');
   
     try {
-      // Run sequentially for stability
       const nameResult = await generateProjectName({ strategyText: strategy });
       const analysisResult = await generateAnalysis({ legalStrategy: strategy });
       
       const newProjectData: Project = {
-        id: `local-${Date.now()}`, // temp ID
+        id: `local-${Date.now()}`,
         name: nameResult.projectName,
         userId: user.uid,
         strategy: strategy,
@@ -279,7 +286,7 @@ export default function ProjectPage() {
       } catch (error) {
         console.error("Failed to update action plan:", error);
         toast({ title: 'Error', description: 'Failed to save action plan changes.', variant: 'destructive' });
-        setProject({ ...project, actionPlan: originalActionPlan }); // Revert on error
+        setProject({ ...project, actionPlan: originalActionPlan });
       }
     }
   };
@@ -292,7 +299,7 @@ export default function ProjectPage() {
 
     const originalName = project.name;
     const updatedProjectData = { ...project, name: projectName };
-    setProject(updatedProjectData); // Optimistic update
+    setProject(updatedProjectData);
     setIsEditingName(false);
 
     if (db && !project.id.startsWith('local-')) {
@@ -303,7 +310,7 @@ export default function ProjectPage() {
         } catch (error) {
             console.error('Error updating project name:', error);
             toast({ title: 'Error', description: 'Failed to update project name.', variant: 'destructive' });
-            setProject({ ...project, name: originalName }); // Revert on error
+            setProject({ ...project, name: originalName });
         }
     }
   };
@@ -320,6 +327,77 @@ export default function ProjectPage() {
         setScopedChatItem(updatedItem);
     }
   };
+
+  const handleGenerateDraft = async () => {
+    if (!project?.analysis?.arbiterSynthesis?.refinedStrategy) {
+        toast({ title: 'Error', description: 'No refined strategy available to generate a draft.', variant: 'destructive' });
+        return;
+    }
+    setIsGeneratingStrategy(true);
+    try {
+        const result = await generateRefinedStrategy({ recommendations: project.analysis.arbiterSynthesis.refinedStrategy });
+        setStrategyDraft(result.draftStrategy);
+        setIsEditingStrategy(true);
+    } catch (error) {
+        toast({ title: 'Error', description: getAIErrorMessage(error), variant: 'destructive' });
+    } finally {
+        setIsGeneratingStrategy(false);
+    }
+  };
+
+  const handleSaveStrategy = async () => {
+    if (!project || !user) return;
+
+    const originalStrategy = project.finalStrategy;
+    const updatedProject = { ...project, finalStrategy: strategyDraft };
+    setProject(updatedProject);
+    setIsEditingStrategy(false);
+
+    if (db && !project.id.startsWith('local-')) {
+        const projectRef = doc(db, 'users', user.uid, 'projects', project.id);
+        try {
+            await updateDoc(projectRef, { finalStrategy: strategyDraft });
+            toast({ title: 'Success', description: 'Final strategy has been saved.' });
+        } catch (error) {
+            console.error("Failed to update final strategy:", error);
+            toast({ title: 'Error', description: 'Failed to save the final strategy.', variant: 'destructive' });
+            setProject({ ...project, finalStrategy: originalStrategy });
+        }
+    }
+  };
+
+  const handleEditClick = () => {
+    if (project?.finalStrategy) {
+        setStrategyDraft(project.finalStrategy);
+        setIsEditingStrategy(true);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingStrategy(false);
+    setStrategyDraft('');
+  };
+  
+  const handleRefineWithAI = async () => {
+    if (!refineInstruction.trim() || !strategyDraft.trim()) {
+        toast({ title: 'Missing Information', description: 'Please provide an instruction to refine the strategy.', variant: 'destructive' });
+        return;
+    }
+    setIsRefining(true);
+    try {
+        const result = await refineStrategyText({
+            currentText: strategyDraft,
+            instruction: refineInstruction,
+        });
+        setStrategyDraft(result.refinedText);
+        setRefineInstruction('');
+    } catch (error) {
+        toast({ title: 'Error', description: getAIErrorMessage(error), variant: 'destructive' });
+    } finally {
+        setIsRefining(false);
+    }
+  };
+
 
   const renderContent = () => {
     switch (pageState) {
@@ -391,6 +469,60 @@ export default function ProjectPage() {
                 </CardContent>
             </Card>
 
+            <Card>
+              <CardHeader>
+                  <CardTitle className="font-headline text-2xl text-primary">Final Strategy</CardTitle>
+              </CardHeader>
+              <CardContent>
+                  {isEditingStrategy ? (
+                      <div className="space-y-4">
+                          <Textarea
+                              value={strategyDraft}
+                              onChange={(e) => setStrategyDraft(e.target.value)}
+                              className="min-h-[300px] text-base bg-background"
+                              placeholder="Refine your strategy here..."
+                          />
+                          <div className="p-4 border rounded-lg bg-secondary/30 space-y-2">
+                              <h4 className="text-sm font-semibold text-foreground">Refine with AI</h4>
+                              <div className="flex items-center gap-2">
+                                  <Input
+                                      value={refineInstruction}
+                                      onChange={(e) => setRefineInstruction(e.target.value)}
+                                      placeholder="e.g., 'Make the tone more assertive' or 'Add a point about contract law'"
+                                      className="bg-background"
+                                      disabled={isRefining}
+                                  />
+                                  <Button onClick={handleRefineWithAI} disabled={isRefining}>
+                                      {isRefining ? <Spinner className="mr-2" /> : <Wand2 className="mr-2" />}
+                                      Refine
+                                  </Button>
+                              </div>
+                          </div>
+                          <div className="flex justify-end gap-2">
+                              <Button variant="outline" onClick={handleCancelEdit}>Cancel</Button>
+                              <Button onClick={handleSaveStrategy}>Save Strategy</Button>
+                          </div>
+                      </div>
+                  ) : project.finalStrategy ? (
+                      <div className="space-y-4">
+                          <div className="prose prose-invert prose-sm max-w-none prose-p:text-foreground whitespace-pre-wrap p-4 bg-background rounded-lg border">
+                              {project.finalStrategy}
+                          </div>
+                           <div className="flex justify-end">
+                              <Button variant="outline" onClick={handleEditClick}><PenSquare className="mr-2" /> Edit</Button>
+                          </div>
+                      </div>
+                  ) : (
+                      <div className="text-center p-4">
+                          <p className="text-muted-foreground mb-4">Generate a detailed strategy draft based on the Arbiter's Synthesis.</p>
+                          <Button onClick={handleGenerateDraft} disabled={isGeneratingStrategy}>
+                              {isGeneratingStrategy ? <Spinner className="mr-2" /> : <PenSquare className="mr-2" />}
+                              {isGeneratingStrategy ? 'Generating...' : 'Generate Initial Draft'}
+                          </Button>
+                      </div>
+                  )}
+              </CardContent>
+            </Card>
 
             {project.actionPlan && (
                 <ActionChecklist

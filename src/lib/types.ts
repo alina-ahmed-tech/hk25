@@ -158,6 +158,7 @@ export type Project = {
   actionPlan?: ActionItem[];
   mainChatHistory?: ChatMessage[];
   simulationState?: SimulationState;
+  finalStrategy?: string;
 };
 
 export type Analysis = z.infer<typeof AnalysisDashboardSchema>;
@@ -178,3 +179,29 @@ export type ChatMessage = {
   content: string;
   createdAt?: any;
 };
+
+export const SlideSchema = z.object({
+  title: z.string(),
+  subtitle: z.string().optional(),
+  bullets: z.array(z.string()),
+  speakerNotes: z.string().optional(),
+});
+export type Slide = z.infer<typeof SlideSchema>;
+
+export const PresentationContentSchema = z.object({
+  title: z.string(),
+  slides: z.array(SlideSchema),
+});
+export type PresentationContent = z.infer<typeof PresentationContentSchema>;
+
+export const GeneratePresentationInputSchema = z.object({
+  analysis: z.string().describe("A JSON string of the full, structured AI analysis."),
+  projectName: z.string(),
+});
+export type GeneratePresentationInput = z.infer<typeof GeneratePresentationInputSchema>;
+
+export const GeneratePresentationOutputSchema = z.object({
+  fileName: z.string(),
+  fileContent: z.string().describe("Base64 encoded file content."),
+});
+export type GeneratePresentationOutput = z.infer<typeof GeneratePresentationOutputSchema>;
