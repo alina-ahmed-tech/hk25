@@ -79,9 +79,13 @@ export const ThreePartAnalysisSchema = z.object({
   arbiterSynthesis: ArbiterSynthesisSchema.describe('The arbiter’s synthesis of the arguments and rebuttals.'),
 });
 
-export const AnalysisDashboardSchema = ThreePartAnalysisSchema.extend({
+export const AnalysisDashboardSchema = z.object({
+  advocateBrief: z.array(LegalArgumentSchema).describe("The advocate's brief with key arguments and citations. Provide an empty array if there are none."),
+  identifiedWeaknesses: z.array(WeaknessSchema).describe("A list of identified weaknesses in the overall strategy. Provide an empty array if there are none."),
+  arbiterSynthesis: ArbiterSynthesisSchema.describe('The arbiter’s synthesis of the arguments and rebuttals.'),
   adversarialPlaybook: AdversarialPlaybookSchema.describe('An adversarial playbook with counter-arguments and rebuttals.'),
 });
+
 
 // For GenerateAllDeepDives Flow
 export const GenerateAllDeepDivesInputSchema = z.object({

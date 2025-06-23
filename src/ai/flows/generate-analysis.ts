@@ -75,8 +75,6 @@ const generateAnalysisFlow = ai.defineFlow(
     return {
       analysisDashboard: {
         ...highLevelAnalysis,
-        advocateBrief: highLevelAnalysis.advocateBrief || [],
-        identifiedWeaknesses: highLevelAnalysis.identifiedWeaknesses || [],
         adversarialPlaybook: playbook,
       },
     };
