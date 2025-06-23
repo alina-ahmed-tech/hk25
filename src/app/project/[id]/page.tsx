@@ -293,7 +293,7 @@ export default function ProjectPage() {
                     <CardTitle className="font-headline text-2xl text-primary">Next Steps</CardTitle>
                 </CardHeader>
                 <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div className="flex flex-col items-center text-center p-6 bg-background/50 rounded-lg border border-border hover:border-primary/50 transition-colors">
+                    <div className="flex flex-col items-center text-center p-6 bg-card rounded-lg border border-border hover:border-primary/50 transition-colors">
                         <ListTodo className="h-10 w-10 text-primary mb-4" />
                         <h3 className="font-semibold text-lg mb-2 text-foreground">Create Action Plan</h3>
                         <p className="text-sm text-muted-foreground mb-4">
@@ -305,7 +305,7 @@ export default function ProjectPage() {
                         </Button>
                     </div>
 
-                     <div className="flex flex-col items-center text-center p-6 bg-background/50 rounded-lg border border-border hover:border-primary/50 transition-colors">
+                     <div className="flex flex-col items-center text-center p-6 bg-card rounded-lg border border-border hover:border-primary/50 transition-colors">
                         <Rocket className="h-10 w-10 text-primary mb-4" />
                         <h3 className="font-semibold text-lg mb-2 text-foreground">Enter Virtual Hearing</h3>
                         <p className="text-sm text-muted-foreground mb-4">
@@ -333,7 +333,7 @@ export default function ProjectPage() {
                         </Button>
                     </div>
 
-                    <div className="flex flex-col items-center text-center p-6 bg-background/50 rounded-lg border border-border hover:border-primary/50 transition-colors">
+                    <div className="flex flex-col items-center text-center p-6 bg-card rounded-lg border border-border hover:border-primary/50 transition-colors">
                         <Presentation className="h-10 w-10 text-primary mb-4" />
                         <h3 className="font-semibold text-lg mb-2 text-foreground">Generate Strategy Deck</h3>
                         <p className="text-sm text-muted-foreground mb-4">
