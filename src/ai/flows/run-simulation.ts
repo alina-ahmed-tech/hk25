@@ -51,7 +51,7 @@ const runSimulationFlow = ai.defineFlow(
       state = addTranscript(state, 'TRIBUNAL', tribunalOpeningText);
       state.phase = 'OPENING_STATEMENTS';
       
-      const { text: opponentOpening } = await ai.generate({
+      const opponentOpeningResponse = await ai.generate({
           prompt: `You are the counsel for the Republic of Kronos, the Respondent in an international arbitration. The case concerns an environmental counterclaim against the Claimant, Fenoscadia Limited.
           Your task is to generate a concise, powerful opening statement (2-3 paragraphs) based on the Claimant's provided strategy.
           Summarize your case on contamination, health impacts, and costs. Be assertive and confident.
@@ -63,6 +63,7 @@ const runSimulationFlow = ai.defineFlow(
           
           Your Opening Statement:`,
       });
+      const opponentOpening = opponentOpeningResponse.text;
       
       if (!opponentOpening) throw new Error("AI failed to generate opponent's opening statement.");
       state = addTranscript(state, 'OPPOSING_COUNSEL', opponentOpening);
@@ -81,7 +82,7 @@ const runSimulationFlow = ai.defineFlow(
           newState.isAwaitingUserInput = false;
           newState = addTranscript(newState, 'USER', input.userAction.payload!);
 
-          const { output: assessment } = await ai.generate({
+          const assessmentResponse = await ai.generate({
               prompt: `As an expert arbitral tribunal, assess the user's opening statement against the opponent's.
               Your current case strength is ${newState.caseStrength}%.
               Adjust the case strength based on the persuasiveness, clarity, and legal strength of the user's statement compared to the opponent's.
@@ -92,6 +93,7 @@ const runSimulationFlow = ai.defineFlow(
               `,
               output: { schema: z.object({ newStrength: z.number().min(0).max(100) }) },
           });
+          const assessment = assessmentResponse.output;
           
           if (!assessment) throw new Error("AI failed to assess opening statements.");
           newState.caseStrength = assessment.newStrength;
@@ -104,12 +106,13 @@ const runSimulationFlow = ai.defineFlow(
           newState.phase = 'WITNESS_EXAMINATION';
           newState.currentWitness = { name: witnessName, background: witnessBackground };
 
-           const { text: directExam } = await ai.generate({
+           const directExamResponse = await ai.generate({
               prompt: `Simulate a brief direct examination (3-4 questions and answers) by Kronos's counsel of their expert, ${witnessName}, whose background is: ${witnessBackground}. The goal is to build Kronos's case. Format as a series of exchanges. Example:
                 'Kronos Counsel: [Question]'
                 'Dr. Thorne (Simulated): [Answer]'
               `,
           });
+          const directExam = directExamResponse.text;
           
           if (!directExam) throw new Error("AI failed to simulate direct examination.");
           newState = addTranscript(newState, 'SYSTEM', `--- Start of Direct Examination ---\n${directExam}\n--- End of Direct Examination ---`);
@@ -125,7 +128,7 @@ const runSimulationFlow = ai.defineFlow(
             newState.isAwaitingUserInput = false;
             newState = addTranscript(newState, 'USER', input.userAction.payload!);
 
-            const { output: crossExamTurn } = await ai.generate({
+            const crossExamTurnResponse = await ai.generate({
                 prompt: `You are an Arbitral Tribunal simulation engine. Given the user's question to the witness, first, as the Opposing Counsel, decide if you should object. If so, generate the objection.
                 Then, as the Tribunal, rule on the objection, provide a coaching tip if the user's question was weak or the objection was valid, and calculate the impact on case strength (-10 to +10). Finally, generate the witness's answer.
                 
@@ -139,6 +142,7 @@ const runSimulationFlow = ai.defineFlow(
                     witnessAnswer: z.string().describe("The witness's answer to the user's question.") 
                 }) },
             });
+            const crossExamTurn = crossExamTurnResponse.output;
             
             if (!crossExamTurn) {
                 throw new Error("The AI failed to generate a response for the witness examination turn.");
@@ -164,7 +168,7 @@ const runSimulationFlow = ai.defineFlow(
             newState = addTranscript(newState, 'TRIBUNAL', closingPrompt);
             newState.phase = 'CLOSING_ARGUMENTS';
 
-            const { text: opponentClosing } = await ai.generate({
+            const opponentClosingResponse = await ai.generate({
                 prompt: `You are the counsel for the Republic of Kronos. Deliver a powerful closing argument, synthesizing your case based on the entire hearing transcript.
                 
                 Hearing Transcript:
@@ -172,6 +176,7 @@ const runSimulationFlow = ai.defineFlow(
                 ${newState.transcript.map(t => `${t.speaker}: ${t.text}`).join('\n')}
                 """`,
             });
+            const opponentClosing = opponentClosingResponse.text;
 
             if (!opponentClosing) throw new Error("AI failed to generate opponent's closing argument.");
             newState = addTranscript(newState, 'OPPOSING_COUNSEL', opponentClosing);
@@ -185,13 +190,14 @@ const runSimulationFlow = ai.defineFlow(
               newState.isAwaitingUserInput = false;
               newState = addTranscript(newState, 'USER', input.userAction.payload!);
 
-              const { output: finalAssessment } = await ai.generate({
+              const finalAssessmentResponse = await ai.generate({
                   prompt: `As an expert arbitral tribunal, give a final assessment of the user's performance.
                   Your current case strength is ${newState.caseStrength}%.
                   Adjust the case strength based on the user's closing argument.
                   Provide a new final case strength score and a concluding statement.`,
                   output: { schema: z.object({ finalStrength: z.number().min(0).max(100), concludingStatement: z.string() }) },
               });
+              const finalAssessment = finalAssessmentResponse.output;
 
               if (!finalAssessment) throw new Error("AI failed to generate a final assessment.");
               newState.caseStrength = finalAssessment.finalStrength;
