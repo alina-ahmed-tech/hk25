@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 
 const stages = [
-  { name: 'Advocate', model: 'Gemini', color: '56, 189, 248' }, // sky-400
-  { name: 'Adversary', model: 'Gemini', color: '248, 113, 113' }, // red-400
-  { name: 'Arbiter', model: 'Gemini', color: '251, 191, 36' }, // amber-400
+  { name: 'Advocate', model: 'Gemini', color: '210, 20%, 98%' }, // Foreground color (white)
+  { name: 'Adversary', model: 'Gemini', color: '210, 20%, 98%' },
+  { name: 'Arbiter', model: 'Gemini', color: '210, 20%, 98%' },
 ];
 
 export function ThinkingAnimation() {

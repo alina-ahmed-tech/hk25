@@ -98,7 +98,7 @@ export function ChatWindow({ isOpen, onOpenChange, project, onProjectUpdate }: C
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:w-[540px] bg-slate-950/80 backdrop-blur-md border-slate-800 flex flex-col">
+      <SheetContent className="w-full sm:w-[540px] bg-card/80 backdrop-blur-xl border-white/10 flex flex-col">
         <SheetHeader>
           <SheetTitle className="font-headline text-primary">Chat with Arbiter</SheetTitle>
           <SheetDescription>Discuss the case analysis directly with the AI.</SheetDescription>
@@ -109,7 +109,7 @@ export function ChatWindow({ isOpen, onOpenChange, project, onProjectUpdate }: C
                     {chatHistory.map((message, index) => (
                         <div key={index} className={`flex items-start gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
                              {message.role === 'arbiter' && (
-                                <Avatar className="h-8 w-8 bg-amber-500/20 text-amber-300">
+                                <Avatar className="h-8 w-8 bg-secondary text-secondary-foreground">
                                     <AvatarFallback>A</AvatarFallback>
                                 </Avatar>
                              )}
@@ -125,7 +125,7 @@ export function ChatWindow({ isOpen, onOpenChange, project, onProjectUpdate }: C
                     ))}
                     {isLoading && (
                          <div className="flex items-start gap-3">
-                             <Avatar className="h-8 w-8 bg-amber-500/20 text-amber-300">
+                             <Avatar className="h-8 w-8 bg-secondary text-secondary-foreground">
                                 <AvatarFallback>A</AvatarFallback>
                              </Avatar>
                              <div className="rounded-lg px-4 py-2 bg-secondary flex items-center">
@@ -143,7 +143,7 @@ export function ChatWindow({ isOpen, onOpenChange, project, onProjectUpdate }: C
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask a follow-up question..."
               disabled={isLoading}
-              className="bg-slate-800 border-slate-700"
+              className="bg-background/50 border-border"
             />
             <Button type="submit" disabled={isLoading || !input.trim()}>
               <Send className="h-4 w-4" />

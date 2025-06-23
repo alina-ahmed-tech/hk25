@@ -4,36 +4,33 @@
 
 @layer base {
   :root {
-    /* Professional Grayscale "Liquid Glass" Theme */
-    --background: 222 83% 4%; /* A very dark, deep blue */
-    --foreground: 210 20% 98%; /* Almost white */
+    /* Professional Grayscale Liquid Glass Theme */
+    --background: 220 9% 10%; /* very-dark-mostly-black-gray */
+    --foreground: 210 20% 98%; /* almost-white */
     
-    /* Glassmorphism: semi-transparent, blurred */
-    --card: 215 28% 17%; 
+    --card: 220 10% 15%; /* dark-gray */
     --card-foreground: 210 20% 98%;
 
-    --popover: 224 71% 4%; /* Popovers are dark */
+    --popover: 220 10% 10%;
     --popover-foreground: 210 20% 98%;
 
-    /* Primary actions are bright for contrast */
     --primary: 210 20% 98%;
-    --primary-foreground: 222 83% 4%;
+    --primary-foreground: 220 9% 10%;
 
-    --secondary: 215 28% 17%; /* slate-800 */
+    --secondary: 220 10% 20%;
     --secondary-foreground: 210 20% 98%;
 
-    --muted: 215 28% 17%;
-    --muted-foreground: 215 20% 65%; /* slate-400 */
+    --muted: 220 10% 20%;
+    --muted-foreground: 215 20% 65%;
 
-    /* Accent for hover states */
-    --accent: 215 28% 17%;
+    --accent: 220 10% 25%;
     --accent-foreground: 210 20% 98%;
 
-    --destructive: 0 63% 31%; /* Darker Red */
+    --destructive: 0 72% 51%; /* A more standard red for destructive actions */
     --destructive-foreground: 210 20% 98%;
 
     --border: 210 20% 98% / 0.1; /* Transparent white for borders */
-    --input: 215 28% 17% / 0.5;
+    --input: 220 10% 15% / 0.7;
     --ring: 210 20% 98%;
 
     --radius: 0.75rem;
@@ -52,7 +49,8 @@
 /* Apply Liquid Glass effect to key components */
 @layer components {
   .bg-card {
-    @apply bg-card/50 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/20;
+    /* This applies the glass effect */
+    @apply bg-card/60 backdrop-blur-lg border border-white/10 shadow-2xl shadow-black/40;
   }
   .bg-popover {
      @apply bg-popover/80 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/20;
