@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -26,7 +27,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 type PageState = 'form' | 'thinking' | 'dashboard';
 
 export default function ProjectPage() {
-  const { id: projectId } = useParams();
+  const { id: projectIdParams } = useParams();
+  const projectId = Array.isArray(projectIdParams) ? projectIdParams[0] : projectIdParams;
   const router = useRouter();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -34,7 +36,7 @@ export default function ProjectPage() {
   const isNewProject = projectId === 'new';
 
   const [project, setProject] = useState<Project | null>(null);
-  const [pageState, setPageState] = useState<PageState>('form');
+  const [pageState, setPageState] = useState<PageState>(isNewProject ? 'form' : 'thinking');
   const [loading, setLoading] = useState(!isNewProject);
   const [isGeneratingDetails, setIsGeneratingDetails] = useState(false);
   const [isChatOpen, setChatOpen] = useState(false);
@@ -46,69 +48,6 @@ export default function ProjectPage() {
   const [projectName, setProjectName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchProjectData = useCallback(async () => {
-    if (!user || !projectId) {
-      setLoading(false);
-      return;
-    }
-
-    // Handle local-only projects from sessionStorage
-    if ((projectId as string).startsWith('local-')) {
-      setLoading(true);
-      const localDataKey = `pending-project-${projectId}`;
-      const localDataJSON = sessionStorage.getItem(localDataKey);
-      if (localDataJSON) {
-        try {
-          const projectData: Project = JSON.parse(localDataJSON);
-          projectData.createdAt = new Date(projectData.createdAt as any); // Rehydrate Date
-          setProject(projectData);
-          setProjectName(projectData.name);
-          setPageState(projectData.analysis ? 'dashboard' : 'form');
-        } catch (error) {
-          console.error('Failed to parse local project data:', error);
-          toast({ title: 'Error', description: 'Could not load local project data.', variant: 'destructive' });
-          router.push('/dashboard');
-        }
-      } else {
-        toast({ title: 'Error', description: 'Local project data not found in session.', variant: 'destructive' });
-        router.push('/dashboard');
-      }
-      setLoading(false);
-      return;
-    }
-
-    // Handle Firestore projects
-    if (!db) {
-      console.warn("Firebase not configured for a non-local project. Redirecting.");
-      toast({ title: 'Error', description: 'Database not configured.', variant: 'destructive' });
-      router.push('/dashboard');
-      setLoading(false);
-      return;
-    }
-
-    const projectDocRef = doc(db, 'users', user.uid, projectId as string);
-    try {
-      const docSnap = await getDoc(projectDocRef);
-      if (docSnap.exists()) {
-        const projectData = { id: docSnap.id, ...docSnap.data() } as Project;
-        setProject(projectData);
-        setProjectName(projectData.name);
-        setPageState(projectData.analysis ? 'dashboard' : 'form');
-      } else {
-        // This case is handled by the polling logic in useEffect, which will retry.
-        // We only show an error if we are not in a polling state.
-        if (sessionStorage.getItem('pending-project-creation') !== projectId) {
-          toast({ title: 'Error', description: 'Project not found.', variant: 'destructive' });
-          router.push('/dashboard');
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching project:", error);
-      toast({ title: 'Error', description: 'Failed to fetch project data.', variant: 'destructive' });
-    }
-  }, [user, projectId, toast, router]);
-
-
   useEffect(() => {
     if (isNewProject) {
       setLoading(false);
@@ -117,50 +56,91 @@ export default function ProjectPage() {
       return;
     }
 
-    const pendingProjectId = `pending-project-creation`;
-    if (sessionStorage.getItem(pendingProjectId) === projectId) {
+    const loadProjectData = async () => {
+      // Local mode
+      if (projectId.startsWith('local-')) {
+          setLoading(true);
+          const localDataKey = `pending-project-${projectId}`;
+          const localDataJSON = sessionStorage.getItem(localDataKey);
+          if (localDataJSON) {
+              const projectData: Project = JSON.parse(localDataJSON);
+              projectData.createdAt = new Date(projectData.createdAt as any);
+              setProject(projectData);
+              setProjectName(projectData.name);
+              setPageState(projectData.analysis ? 'dashboard' : 'form');
+          } else {
+              toast({ title: 'Error', description: 'Local project data not found.', variant: 'destructive' });
+              router.push('/dashboard');
+          }
+          setLoading(false);
+          return;
+      }
+      
+      // Firestore mode
+      if (!user || !db) return;
+
+      const projectRef = doc(db, 'users', user.uid, 'projects', projectId);
+
+      const fetchAndSet = async (): Promise<boolean> => {
+        try {
+          const docSnap = await getDoc(projectRef);
+          if (docSnap.exists()) {
+            const projectData = { id: docSnap.id, ...docSnap.data() } as Project;
+            if (projectData.analysis) {
+              setProject(projectData);
+              setProjectName(projectData.name);
+              setPageState('dashboard');
+              setLoading(false);
+              sessionStorage.removeItem('pending-project-creation');
+              return true; // Polling successful
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching project:", error);
+          toast({ title: 'Error', description: 'Failed to fetch project data.', variant: 'destructive' });
+          setLoading(false);
+          return true; // Stop polling on error
+        }
+        return false; // Polling not complete, continue
+      };
+      
+      const isPending = sessionStorage.getItem('pending-project-creation') === projectId;
+      if (isPending) {
         setLoading(true);
-        const checkInterval = setInterval(async () => {
-            await fetchProjectData();
-            // This assumes fetchProjectData sets the project state
-        }, 2000);
-        
-        // Cleanup logic
-        const cleanup = () => {
-            clearInterval(checkInterval);
-            sessionStorage.removeItem(pendingProjectId);
-        }
+        const intervalId = setInterval(async () => {
+          const success = await fetchAndSet();
+          if (success) {
+            clearInterval(intervalId);
+          }
+        }, 2500);
 
-        // After the project is loaded and has analysis, clear interval
-        if (project?.analysis) {
-            cleanup();
-            setLoading(false);
-        }
-
-        // Failsafe timeout
         const timeoutId = setTimeout(() => {
-            if (!project) { // Check if project is still not loaded
-                toast({ title: "Timeout", description: "Project creation took too long.", variant: "destructive"});
-                cleanup();
-                setLoading(false);
+            clearInterval(intervalId);
+            if (sessionStorage.getItem('pending-project-creation') === projectId) {
+                toast({ title: "Timeout", description: "Project creation is taking longer than expected.", variant: "destructive"});
                 router.push('/dashboard');
             }
         }, 60000);
 
         return () => {
-            cleanup();
-            clearTimeout(timeoutId);
+          clearInterval(intervalId);
+          clearTimeout(timeoutId);
         };
-    } else {
+      } else {
         setLoading(true);
-        fetchProjectData().finally(() => setLoading(false));
-    }
-  }, [projectId, isNewProject, fetchProjectData, project, router, toast]);
-  
+        await fetchAndSet();
+        setLoading(false);
+      }
+    };
+    
+    loadProjectData();
+    // This effect should only run when the user or project ID changes.
+  }, [projectId, isNewProject, user, db, router, toast]);
+
   // Effect to trigger background deep dive generation
   useEffect(() => {
     const runDeepDives = async (proj: Project) => {
-        if (!proj.strategy || !proj.analysis) return;
+        if (!proj.strategy || !proj.analysis || !user) return;
         
         setIsGeneratingDetails(true);
         try {
@@ -176,8 +156,8 @@ export default function ProjectPage() {
             };
             setProject(updatedProject);
 
-            if (db && user && !proj.id.startsWith('local-')) {
-                const projectRef = doc(db, 'users', user.uid, proj.id);
+            if (db && !proj.id.startsWith('local-')) {
+                const projectRef = doc(db, 'users', user.uid, 'projects', proj.id);
                 await updateDoc(projectRef, { 
                     analysis: result.updatedAnalysis,
                     analysisStatus: 'complete'
@@ -187,7 +167,6 @@ export default function ProjectPage() {
         } catch (error) {
             console.error("Error generating deep dives:", error);
             toast({ title: 'Deep Dive Error', description: getAIErrorMessage(error), variant: 'destructive' });
-            // Optionally set status to 'failed'
         } finally {
             setIsGeneratingDetails(false);
         }
@@ -288,13 +267,13 @@ export default function ProjectPage() {
   }
   
   const handleActionItemUpdate = async (updatedItems: ActionItem[]) => {
-    if (!project) return;
+    if (!project || !user) return;
     
     const originalActionPlan = project.actionPlan;
     const updatedProject = { ...project, actionPlan: updatedItems };
     setProject(updatedProject);
 
-    if (db && user && !project.id.startsWith('local-')) {
+    if (db && !project.id.startsWith('local-')) {
       const projectRef = doc(db, 'users', user.uid, 'projects', project.id);
       try {
         await updateDoc(projectRef, { actionPlan: updatedItems });
@@ -307,7 +286,7 @@ export default function ProjectPage() {
   };
 
   const handleNameSave = async () => {
-    if (!project || project.name === projectName) {
+    if (!project || project.name === projectName || !user) {
         setIsEditingName(false);
         return;
     }
@@ -317,7 +296,7 @@ export default function ProjectPage() {
     setProject(updatedProjectData); // Optimistic update
     setIsEditingName(false);
 
-    if (db && user && !project.id.startsWith('local-')) {
+    if (db && !project.id.startsWith('local-')) {
         const projectRef = doc(db, 'users', user.uid, 'projects', project.id);
         try {
             await updateDoc(projectRef, { name: projectName });
@@ -337,7 +316,6 @@ export default function ProjectPage() {
       item.id === updatedItem.id ? updatedItem : item
     );
     handleActionItemUpdate(newActionPlan);
-    // Also update the item in the dialog
     const currentScopedItem = scopedChatItem;
     if (currentScopedItem && currentScopedItem.id === updatedItem.id) {
         setScopedChatItem(updatedItem);
@@ -438,7 +416,7 @@ export default function ProjectPage() {
   }
 
   if (!project && !isNewProject) {
-    return <div className="container py-8 text-center text-slate-400">Project could not be loaded.</div>;
+    return <div className="container py-8 text-center text-slate-400">Project could not be loaded. Please return to the dashboard.</div>;
   }
 
   return (
