@@ -10,7 +10,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'zod';
+import {z} from 'genkit';
 import type {AdversarialPlaybook} from '@/lib/types';
 import {AdversarialPlaybookSchema} from '@/lib/types';
 

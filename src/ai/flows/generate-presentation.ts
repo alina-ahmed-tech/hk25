@@ -8,7 +8,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'zod';
+import { z } from 'genkit';
 import htmlToDocx from 'html-to-docx';
 import {
   GeneratePresentationInputSchema,

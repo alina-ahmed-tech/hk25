@@ -9,7 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'zod';
+import {z} from 'genkit';
 import {generateAdversarialPlaybook} from './generate-adversarial-playbook';
 import { ThreePartAnalysisSchema, AnalysisDashboardSchema, GenerateAnalysisInputSchema } from '@/lib/types';
 import type { Analysis } from '@/lib/types';
@@ -54,23 +54,23 @@ const generateAnalysisFlow = ai.defineFlow(
     inputSchema: GenerateAnalysisInputSchema,
   },
   async input => {
-    // Step 1: Generate high-level analysis and playbook in parallel
-    const [threePartAnalysisResult, adversarialPlaybookResult] = await Promise.all([
-      threePartAnalysisPrompt(input),
-      generateAdversarialPlaybook(input),
-    ]);
-
+    // Step 1: Generate the high-level three-part analysis.
+    const threePartAnalysisResult = await threePartAnalysisPrompt(input);
     const highLevelAnalysis = threePartAnalysisResult.output;
-    const playbook = adversarialPlaybookResult.adversarialPlaybook;
 
     if (!highLevelAnalysis) {
       throw new Error('Failed to generate the core analysis due to an invalid AI response format.');
     }
+    
+    // Step 2: Generate the adversarial playbook sequentially.
+    const adversarialPlaybookResult = await generateAdversarialPlaybook(input);
+    const playbook = adversarialPlaybookResult.adversarialPlaybook;
+
     if (!playbook) {
       throw new Error('Failed to generate the adversarial playbook due to an invalid AI response format.');
     }
 
-    // Step 2: Combine initial results into the final dashboard object
+    // Step 3: Combine initial results into the final dashboard object
     return {
       analysisDashboard: {
         ...highLevelAnalysis,

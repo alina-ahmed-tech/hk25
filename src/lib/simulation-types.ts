@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'genkit';
 
 export const SimulationPhaseSchema = z.enum([
   'SETUP',

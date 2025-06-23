@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import {z} from 'genkit';
 import type { SimulationState } from './simulation-types';
 
 // For Adversarial Playbook
