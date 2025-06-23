@@ -13,3 +13,4 @@ import '@/ai/flows/run-simulation.ts';
 import '@/ai/flows/generate-deep-dive.ts';
 import '@/ai/flows/generate-all-deep-dives.ts';
 import '@/ai/flows/generate-presentation.ts';
+import '@/ai/flows/generate-speech.ts';
