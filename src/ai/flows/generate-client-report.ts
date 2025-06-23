@@ -6,7 +6,6 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import puppeteer from 'puppeteer';
 import {
   DocumentGenerationInputSchema,
   DocumentGenerationOutputSchema,
@@ -153,6 +152,9 @@ const generateClientReportFlow = ai.defineFlow(
     outputSchema: DocumentGenerationOutputSchema,
   },
   async ({ analysis, projectName }) => {
+    // Step 0: Dynamically import puppeteer only when this flow is called.
+    const puppeteer = (await import('puppeteer')).default;
+
     // Step 1: Generate structured content.
     const { output: reportContent } = await clientReportPrompt({ analysis });
 
