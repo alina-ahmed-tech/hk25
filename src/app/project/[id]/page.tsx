@@ -184,10 +184,9 @@ export default function ProjectPage() {
     setPageState('thinking');
   
     try {
-      const [nameResult, analysisResult] = await Promise.all([
-        generateProjectName({ strategyText: strategy }),
-        generateAnalysis({ legalStrategy: strategy }),
-      ]);
+      // Run sequentially for stability
+      const nameResult = await generateProjectName({ strategyText: strategy });
+      const analysisResult = await generateAnalysis({ legalStrategy: strategy });
       
       const newProjectData: Project = {
         id: `local-${Date.now()}`, // temp ID
