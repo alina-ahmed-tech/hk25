@@ -7,18 +7,6 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import {
-  Document,
-  Packer,
-  Paragraph,
-  TextRun,
-  HeadingLevel,
-  AlignmentType,
-  PageBreak,
-  Header,
-  Footer,
-  PageNumber,
-} from 'docx';
-import {
   DocumentGenerationInputSchema,
   DocumentGenerationOutputSchema,
   InternalMemoSchema,
@@ -53,6 +41,20 @@ const generateInternalMemoFlow = ai.defineFlow(
     outputSchema: DocumentGenerationOutputSchema,
   },
   async ({ analysis, projectName }) => {
+    // Dynamically import 'docx' only when this flow is called.
+    const {
+      Document,
+      Packer,
+      Paragraph,
+      TextRun,
+      HeadingLevel,
+      AlignmentType,
+      PageBreak,
+      Header,
+      Footer,
+      PageNumber,
+    } = await import('docx');
+
     // Step 1: Generate structured content from the AI.
     const { output: memoContent } = await internalMemoPrompt({ analysis });
 
