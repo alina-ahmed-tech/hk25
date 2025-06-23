@@ -273,7 +273,7 @@ export function AnalysisDashboard({ analysis, isGeneratingDetails }: AnalysisDas
             <AnimatePresence>
             {selectedCard && (
                 <motion.div
-                    className="fixed inset-0 bg-background/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-8 z-50"
+                    className="fixed inset-0 bg-background/80 backdrop-blur-md z-50"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -281,10 +281,10 @@ export function AnalysisDashboard({ analysis, isGeneratingDetails }: AnalysisDas
                 >
                     <motion.div
                         layoutId={selectedCard.id}
-                        className="bg-card rounded-lg w-full max-w-4xl h-[90vh] flex flex-col"
+                        className="bg-card w-screen h-screen flex flex-col"
                         onClick={(e) => e.stopPropagation()} 
                     >
-                        <CardHeader className="flex flex-row items-center justify-between">
+                        <CardHeader className="flex flex-row items-center justify-between p-6 border-b border-border/20">
                             <div className="flex items-center gap-4">
                                <div className="p-2 bg-secondary rounded-lg">
                                  <selectedCard.icon className={`h-6 w-6 ${selectedCard.color}`} />
@@ -296,7 +296,7 @@ export function AnalysisDashboard({ analysis, isGeneratingDetails }: AnalysisDas
                                 <span className="sr-only">Close</span>
                             </Button>
                         </CardHeader>
-                        <CardContent className="flex-1 overflow-y-auto pr-2">
+                        <CardContent className="flex-1 overflow-y-auto p-6">
                            {renderDetailContent()}
                         </CardContent>
                     </motion.div>
