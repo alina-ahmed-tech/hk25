@@ -120,7 +120,7 @@ export function StrategyForm({ onSubmit, isLoading }: StrategyFormProps) {
         <CardTitle className="font-headline text-4xl text-foreground">Submit Your Case Details</CardTitle>
         <CardDescription className="text-lg pt-2 text-slate-400">
           Provide your case facts, key players, and initial strategy to begin the analysis.
-        </cardDescription>
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
