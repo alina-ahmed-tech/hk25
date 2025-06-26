@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -203,13 +202,40 @@ export default function ProjectPage() {
       const fileData = await Promise.all(fileDataPromises);
 
       const nameResult = await generateProjectName({ strategyText: data.strategy });
-      
+
+      // --- RAG Integration ---
+      // 1. Call /api/rag with the strategy as the query
+      let ragContext = '';
+      let ragSources: any[] = [];
+      try {
+        const ragRes = await fetch('/api/rag', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: data.strategy, topK: 5 })
+        });
+        const ragJson = await ragRes.json();
+        if (ragJson.success && ragJson.data) {
+          ragContext = ragJson.data.sources
+            .map((src: any, i: number) => `Source ${i + 1}: ${src.chunk.content}`)
+            .join('\n\n');
+          ragSources = ragJson.data.sources;
+          // Print RAG sources to the console for verification
+          console.log('RAG Sources:', ragSources);
+        }
+      } catch (e) {
+        console.warn('RAG context fetch failed:', e);
+      }
+      // --- End RAG Integration ---
+
+      // 2. Pass the RAG context as part of the prompt to the LLM
       const analysisResult = await generateAnalysis({ 
           legalStrategy: data.strategy,
           areaOfLaw: data.areaOfLaw,
           judgeName: data.judgeName,
           opposingCounsel: data.opposingCounsel,
           files: fileData,
+          ragContext, // <-- pass as extra field
+          ragSources, // <-- pass as extra field if you want to display sources
       });
       
       const newProjectData: Project = {

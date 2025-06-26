@@ -73,6 +73,8 @@ export const GenerateAnalysisInputSchema = z.object({
   // These fields are for passing the generated profiles between flows
   judgeProfile: JudgeProfileSchema.optional(),
   lawyerProfiles: z.array(LawyerProfileSchema).optional(),
+  ragContext: z.string().optional().describe('Context string from RAG retrieval to be included in the analysis.'),
+  ragSources: z.array(z.any()).optional().describe('Raw RAG sources for reference/display.'),
 });
 export type GenerateAnalysisInput = z.infer<typeof GenerateAnalysisInputSchema>;
 
@@ -118,13 +120,13 @@ export const ArbiterSynthesisSchema = z.object({
 export const ThreePartAnalysisSchema = z.object({
   advocateBrief: z.array(LegalArgumentSchema).describe("The advocate's brief with key arguments and citations. Provide an empty array if there are none."),
   identifiedWeaknesses: z.array(WeaknessSchema).describe("A list of identified weaknesses in the overall strategy. Provide an empty array if there are none."),
-  arbiterSynthesis: ArbiterSynthesisSchema.describe('The arbiter’s synthesis of the arguments and rebuttals.'),
+  arbiterSynthesis: ArbiterSynthesisSchema.describe("The arbiter's synthesis of the arguments and rebuttals."),
 });
 
 export const AnalysisDashboardSchema = z.object({
   advocateBrief: z.array(LegalArgumentSchema).describe("The advocate's brief with key arguments and citations. Provide an empty array if there are none."),
   identifiedWeaknesses: z.array(WeaknessSchema).describe("A list of identified weaknesses in the overall strategy. Provide an empty array if there are none."),
-  arbiterSynthesis: ArbiterSynthesisSchema.describe('The arbiter’s synthesis of the arguments and rebuttals.'),
+  arbiterSynthesis: ArbiterSynthesisSchema.describe("The arbiter's synthesis of the arguments and rebuttals."),
   adversarialPlaybook: AdversarialPlaybookSchema.describe('An adversarial playbook with counter-arguments and rebuttals.'),
   judgeProfile: JudgeProfileSchema.optional().describe("An in-depth profile of the presiding judge."),
   lawyerProfiles: z.array(LawyerProfileSchema).optional().describe("In-depth profiles of the opposing counsel."),

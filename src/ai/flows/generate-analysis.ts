@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -30,6 +29,11 @@ const threePartAnalysisPrompt = ai.definePrompt({
   output: {schema: ThreePartAnalysisSchema},
   prompt: `You are a world-class AI legal analyst. Your task is to provide a concise, multi-faceted analysis of a legal strategy, taking into account the specific area of law, the presiding judge, and the opposing counsel.
 
+  {{#if ragContext}}
+  **Retrieved Arbitration Case Context (RAG):**
+  {{{ragContext}}}
+  {{/if}}
+
   **Primary Information to Analyze:**
   - **Area of Law:** {{areaOfLaw}}
   - **Legal Strategy Document:** {{{legalStrategy}}}
@@ -57,14 +61,14 @@ const threePartAnalysisPrompt = ai.definePrompt({
     {{/each}}
   {{/if}}
 
-  Now, produce a structured analysis in JSON format with three distinct parts, deeply integrating the context provided above. Adhere strictly to the provided JSON schema.
-  
-  **Crucially, you must provide a value for every field. For any list or array field (like 'caseCitations', 'identifiedWeaknesses', etc.), if there are no items to include, you MUST provide an empty array \`[]\`. Do not omit any fields.**
-  The only exception is the 'predictiveAnalysis' object, which you may omit entirely if you cannot make a prediction with reasonable confidence.
+  Generate a structured analysis in valid JSON format, containing three distinct sections as defined in the provided JSON schema. Integrate all relevant context above, including area of law, legal strategy, judge and lawyer profiles, and any attached documents.
 
-  1.  **Advocate's Brief:**
-      *   Formulate the most compelling arguments for the provided strategy, **tailored to the specified Area of Law and designed to appeal to the known preferences of the Judge.** If there are none, provide an empty array for 'advocateBrief'.
-      *   For each argument, provide a concise summary. If relevant, include key case citations. If there are no citations for an argument, provide an empty array for 'caseCitations'.
+  **Instructions:**
+  - Every field defined in the schema must be present in the output. For any array or list field (such as 'caseCitations', 'identifiedWeaknesses', etc.), if there are no items, provide an empty array \`[]\` Do not omit any fields. The only exception is the 'predictiveAnalysis' object, which you may omit if you cannot make a prediction with reasonable confidence.
+
+  1. **Advocate's Brief:**
+     - Present the strongest arguments supporting the provided strategy, tailored to the specified Area of Law and the known preferences of the Judge. If there are no arguments, return an empty array for 'advocateBrief'.
+     - For each argument, provide a concise summary. If relevant, include key case citations; if there are no citations for an argument, provide an empty array for 'caseCitations'.
 
   2.  **Identified Weaknesses:**
       *   Identify the most significant weaknesses, **especially considering how the specified Opposing Counsel might exploit them based on their known styles.** If there are none, provide an empty array for 'identifiedWeaknesses'.
